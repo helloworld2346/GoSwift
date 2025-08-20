@@ -22,9 +22,14 @@ Một ứng dụng webchat realtime đơn giản bằng Golang, phù hợp cho l
 - **WebSocket**: [Gorilla WebSocket](https://github.com/gorilla/websocket) - Real-time communication
 
 ### Frontend
-- **Framework**: Vanilla JavaScript + WebSocket API
-- **UI**: Tailwind CSS
-- **Icons**: Heroicons
+- **Framework**: [Next.js 15](https://nextjs.org/) - React framework với App Router
+- **Language**: [TypeScript](https://www.typescriptlang.org/) - Type safety
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) - Beautiful, accessible components
+- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/) - Lightweight state management
+- **Forms**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) - Form validation
+- **Icons**: [Lucide React](https://lucide.dev/) - Beautiful icons
+- **Notifications**: [Sonner](https://sonner.emilkowal.ski/) - Toast notifications
 
 ### DevOps
 - **Container**: Docker & Docker Compose
@@ -105,16 +110,34 @@ GoSwift/
 │       ├── validator.go
 │       ├── errors.go
 │       └── hash.go
-├── web/
-│   ├── static/                 # Static files
-│   │   ├── css/
-│   │   ├── js/
-│   │   └── images/
-│   └── templates/              # HTML templates
-│       ├── login.html
-│       ├── register.html
-│       ├── chat.html
-│       └── layout.html
+├── web/                        # Next.js Frontend Application
+│   ├── src/
+│   │   ├── app/               # Next.js App Router pages
+│   │   │   ├── (auth)/        # Auth routes group
+│   │   │   │   ├── login/
+│   │   │   │   └── register/
+│   │   │   ├── dashboard/     # Protected routes
+│   │   │   ├── globals.css
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── components/        # Reusable components
+│   │   │   ├── ui/           # shadcn/ui components
+│   │   │   ├── auth/         # Auth components
+│   │   │   └── layout/       # Layout components
+│   │   ├── lib/              # Utilities
+│   │   │   ├── api.ts        # API client
+│   │   │   ├── validations.ts # Zod schemas
+│   │   │   ├── constants.ts  # App constants
+│   │   │   └── utils.ts      # Utility functions
+│   │   ├── hooks/            # Custom hooks
+│   │   ├── stores/           # Zustand stores
+│   │   └── types/            # TypeScript types
+│   ├── public/               # Static assets
+│   ├── package.json
+│   ├── next.config.ts
+│   ├── tailwind.config.js
+│   ├── components.json       # shadcn/ui config
+│   └── tsconfig.json
 ├── configs/                    # Configuration files
 │   ├── config.yaml
 │   ├── config.dev.yaml
@@ -188,7 +211,7 @@ GoSwift/
 - [x] Swagger UI accessible
 
 ### Phase 2: Authentication System (Tuần 2) ✅ **COMPLETED**
-**Mục tiêu**: User có thể đăng ký, đăng nhập
+**Mục tiêu**: User có thể đăng ký, đăng nhập với full-stack authentication system
 
 #### 2.1 User Management ✅ **COMPLETED**
 - [x] User Model: Tạo struct User với validation
@@ -225,11 +248,19 @@ GoSwift/
 - [x] Content-Security-Policy (basic)
 - [x] HSTS (production only)
 
-#### 2.6 Basic Frontend
-- [ ] Simple login/register forms
-- [ ] Token storage trong localStorage
-- [ ] Basic navigation
-- [ ] Error handling
+#### 2.6 Basic Frontend ✅ **COMPLETED**
+- [x] **Next.js 15** với TypeScript và App Router
+- [x] **shadcn/ui** components (Button, Input, Card, Form, etc.)
+- [x] **Login/Register forms** với React Hook Form + Zod validation
+- [x] **Token storage** trong localStorage với Zustand persist
+- [x] **Protected routes** với client-side authentication
+- [x] **Dashboard layout** với responsive sidebar navigation
+- [x] **Error handling** với Error Boundaries và toast notifications
+- [x] **Loading states** và reusable Loading component
+- [x] **Type safety** với TypeScript interfaces và types
+- [x] **Modern UI** với Tailwind CSS và responsive design
+- [x] **Custom hooks** cho authentication logic
+- [x] **Constants** và environment configuration
 
 ### Phase 3: Real-time Chat Core (Tuần 3-4)
 **Mục tiêu**: Có thể chat real-time cơ bản
@@ -310,12 +341,15 @@ GoSwift/
 
 ### Prerequisites
 - Go 1.21+
+- Node.js 18+
 - Docker & Docker Compose
 - PostgreSQL 15+
 - Redis 7+
 - Kafka 3+
 
 ### Quick Start
+
+#### Backend Setup
 ```bash
 # Clone repository
 git clone <repository-url>
@@ -325,14 +359,34 @@ cd GoSwift
 cp .env.example .env
 
 # Start services with Docker
-docker-compose up -d
+make up
 
 # Run migrations
 make migrate
 
-# Start application
+# Start backend application
 make run
 ```
+
+#### Frontend Setup
+```bash
+# Navigate to frontend directory
+cd web
+
+# Install dependencies
+npm install
+
+# Copy environment file
+cp .env.example .env.local
+
+# Start frontend development server
+npm run dev
+```
+
+#### Access Applications
+- **Backend API**: http://localhost:8080
+- **Frontend App**: http://localhost:3000
+- **Swagger Docs**: http://localhost:8080/swagger/index.html
 
 ## 🏗️ Architecture Overview
 
@@ -368,6 +422,8 @@ make run
 ```
 
 ### Package Responsibilities
+
+#### Backend
 - **Handlers**: HTTP request/response handling
 - **Router**: Route definitions and middleware setup
 - **Service**: Business logic and orchestration
@@ -377,6 +433,14 @@ make run
 - **Cache**: Redis operations and connection management
 - **Middleware**: Authentication, CORS, Rate limiting, Security headers
 - **Utils**: Configuration, validation, error handling, hashing
+
+#### Frontend
+- **App Router**: Next.js 15 page routing and layouts
+- **Components**: Reusable UI components with shadcn/ui
+- **Hooks**: Custom React hooks for business logic
+- **Stores**: Zustand state management
+- **Lib**: API client, validation schemas, utilities
+- **Types**: TypeScript type definitions
 
 ## 🔒 Security Features Implemented
 
@@ -418,6 +482,7 @@ make run
 
 ## 🛠 Development Commands
 
+### Backend Commands
 ```bash
 # Run application
 make run
@@ -439,4 +504,22 @@ make build
 
 # Clean build artifacts
 make clean
+```
+
+### Frontend Commands
+```bash
+# Navigate to frontend directory
+cd web
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+
+# Run linting
+npm run lint
 ```
