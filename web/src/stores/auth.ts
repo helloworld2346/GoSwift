@@ -22,8 +22,8 @@ interface AuthState {
     refreshToken: string | null;
 
     // Actions
-    login: (email: string, password: string) => Promise<AuthResponse | null>;
-    register: (email: string, password: string, display_name: string) => Promise<UserResponse | null>; 
+    login: (email: string, password: string) => Promise<boolean>;
+    register: (email: string, password: string, display_name: string) => Promise<UserResponse | null>;
     logout: () => Promise<void>;
     getProfile: () => Promise<void>;
     clearError: () => void;
@@ -65,7 +65,6 @@ export const useAuthStore = create<AuthState>()(
 
                     const response: AuthResponse = await apiClient.login({ email, password });
 
-                    // Store token in localStorage
                     localStorage.setItem('token', response.token);
 
                     set({
@@ -76,7 +75,7 @@ export const useAuthStore = create<AuthState>()(
                         error: null,
                     });
 
-                    return response; // Return success response
+                    return true; // Return boolean instead of response
                 } catch (error) {
                     const errorMessage = error instanceof Error ? error.message : 'Login failed';
                     set({
@@ -84,8 +83,7 @@ export const useAuthStore = create<AuthState>()(
                         error: errorMessage,
                     });
 
-                    // Don't throw error, let UI handle it
-                    return null;
+                    return false; // Return false on error
                 }
             },
 
