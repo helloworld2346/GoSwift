@@ -25,6 +25,9 @@ func SetupRouter(config *utils.Config, db *database.DB, redisClient *cache.Redis
 
 	r := gin.Default()
 
+	// Add security headers (thêm dòng này)
+	r.Use(middleware.SecurityHeaders())
+
 	// Add rate limiting
 	rateLimiter := middleware.NewRateLimiter(100, time.Minute) // 100 requests/minute
 	r.Use(rateLimiter.RateLimitMiddleware())

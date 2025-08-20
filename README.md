@@ -85,7 +85,8 @@ GoSwift/
 │   │   ├── auth.go
 │   │   ├── cors.go
 │   │   ├── logging.go
-│   │   └── rate_limit.go
+│   │   ├── rate_limit.go
+│   │   └── security.go
 │   └── router/                 # Router setup
 │       ├── router.go
 │       └── auth_routes.go
@@ -101,7 +102,9 @@ GoSwift/
 │   └── utils/                  # Common utilities
 │       ├── config.go
 │       ├── logger.go
-│       └── validator.go
+│       ├── validator.go
+│       ├── errors.go
+│       └── hash.go
 ├── web/
 │   ├── static/                 # Static files
 │   │   ├── css/
@@ -142,6 +145,7 @@ GoSwift/
 ├── go.sum
 ├── .env.example
 ├── .gitignore
+├── Makefile
 └── README.md
 ```
 
@@ -212,7 +216,16 @@ GoSwift/
 - [x] JWT Secret Validation
 - [x] Enhanced Health Check (Database + Redis)
 
-#### 2.5 Basic Frontend
+#### 2.5 Security Headers ✅ **COMPLETED**
+- [x] X-Content-Type-Options: nosniff
+- [x] X-Frame-Options: DENY
+- [x] X-XSS-Protection: 1; mode=block
+- [x] Cache-Control: no-store, no-cache, must-revalidate, private
+- [x] Referrer-Policy: strict-origin-when-cross-origin
+- [x] Content-Security-Policy (basic)
+- [x] HSTS (production only)
+
+#### 2.6 Basic Frontend
 - [ ] Simple login/register forms
 - [ ] Token storage trong localStorage
 - [ ] Basic navigation
@@ -274,14 +287,20 @@ GoSwift/
 - [x] Rate limiting implementation ✅ **COMPLETED**
 - [x] Input validation và sanitization ✅ **COMPLETED**
 - [x] CORS configuration ✅ **COMPLETED**
+- [x] Security headers ✅ **COMPLETED**
 
-#### 5.2 Advanced Features
+#### 5.2 HTTPS Setup
+- [ ] SSL certificate configuration
+- [ ] HTTPS server setup
+- [ ] Certificate validation
+
+#### 5.3 Advanced Features
 - [ ] Group chat management
 - [ ] Message search functionality
 - [ ] Message expiration
 - [ ] User blocking
 
-#### 5.3 Performance & Testing
+#### 5.4 Performance & Testing
 - [ ] Database query optimization
 - [ ] Unit tests cho core logic
 - [ ] Integration tests
@@ -355,3 +374,69 @@ make run
 - **Repository**: Data access and CRUD operations
 - **Models**: Data structures and validation
 - **Database**: Connection management and migrations
+- **Cache**: Redis operations and connection management
+- **Middleware**: Authentication, CORS, Rate limiting, Security headers
+- **Utils**: Configuration, validation, error handling, hashing
+
+## 🔒 Security Features Implemented
+
+### Authentication & Authorization
+- ✅ JWT-based authentication
+- ✅ Token blacklisting with Redis
+- ✅ Password hashing with bcrypt
+- ✅ Input validation and sanitization
+- ✅ UUID validation for user IDs
+
+### Rate Limiting & Protection
+- ✅ In-memory rate limiting (100 requests/minute)
+- ✅ CORS configuration (development/production)
+- ✅ Security headers middleware
+
+### Security Headers
+- ✅ X-Content-Type-Options: nosniff
+- ✅ X-Frame-Options: DENY
+- ✅ X-XSS-Protection: 1; mode=block
+- ✅ Cache-Control: no-store, no-cache, must-revalidate, private
+- ✅ Referrer-Policy: strict-origin-when-cross-origin
+- ✅ Content-Security-Policy (basic)
+- ✅ HSTS (production only)
+
+## 📊 API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/register` - User registration
+- `POST /api/v1/auth/login` - User login
+- `POST /api/v1/auth/logout` - User logout
+- `POST /api/v1/auth/refresh` - Refresh token
+- `GET /api/v1/auth/profile` - Get user profile
+
+### Health Check
+- `GET /health` - Server health status
+
+### Swagger Documentation
+- `GET /swagger/*` - API documentation
+
+## 🛠 Development Commands
+
+```bash
+# Run application
+make run
+
+# Run with hot reload
+make dev
+
+# Run tests
+make test
+
+# Run migrations
+make migrate
+
+# Generate swagger docs
+make swagger
+
+# Build for production
+make build
+
+# Clean build artifacts
+make clean
+```
