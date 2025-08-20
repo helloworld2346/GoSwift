@@ -209,6 +209,91 @@
   --tw-ring-color: var(--nebula-purple);
 }
 
+/* Disable autofill dropdown styling */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--space-bg-primary) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Hide autofill dropdown */
+input::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+
+/* Disable autocomplete dropdown */
+input::-webkit-autofill {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Disable all autocomplete and saved info */
+input[autocomplete="off"] {
+  -webkit-autocomplete: none;
+  -moz-autocomplete: none;
+  autocomplete: none;
+}
+
+/* Disable browser saved info suggestions */
+input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
+input::-webkit-contacts-auto-fill-button {
+  display: none !important;
+}
+
+/* Disable datalist suggestions */
+input::-webkit-list-button {
+  display: none !important;
+}
+
+/* Disable any saved form data */
+input:not([type="password"]) {
+  -webkit-text-security: none;
+}
+
+/* Disable browser form history */
+input[type="email"],
+input[type="text"] {
+  -webkit-autocomplete: none;
+  -moz-autocomplete: none;
+  autocomplete: none;
+}
+
+/* Disable all browser saved info and suggestions */
+input[data-form-type="other"] {
+  -webkit-autocomplete: none !important;
+  -moz-autocomplete: none !important;
+  autocomplete: none !important;
+}
+
+/* Disable any remaining browser suggestions */
+input::-webkit-credentials-auto-fill-button,
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-list-button,
+input::-webkit-calendar-picker-indicator {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Disable form data persistence */
+form {
+  autocomplete: off;
+}
+
+/* Disable any saved info popups */
+input:focus::-webkit-credentials-auto-fill-button,
+input:focus::-webkit-contacts-auto-fill-button {
+  display: none !important;
+}
+
+
 /* Form validation messages - Space theme */
 .form-message {
   color: #ff6b6b;
@@ -424,6 +509,40 @@
     transform: translateY(-15px) rotate(270deg);
     opacity: 0.9;
   }
+}
+
+/* Password Requirements Checkmarks */
+.password-requirement-check {
+  animation: checkmarkPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes checkmarkPop {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2) rotate(0deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Success color for space theme - Cyan/Blue instead of green */
+.text-green-400 {
+  color: #06b6d4;
+}
+
+.border-green-400 {
+  border-color: #06b6d4;
+}
+
+.bg-green-400 {
+  background-color: #06b6d4;
 }
 
 .space-card {

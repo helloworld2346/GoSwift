@@ -60,6 +60,11 @@ export function LoginForm() {
                                     type="email"
                                     placeholder="Enter your email"
                                     className="bg-transparent border-card-border text-text-primary placeholder:text-text-muted focus:border-nebula-purple focus:ring-nebula-purple h-12 text-base"
+                                    autoComplete="off"
+                                    autoCorrect="off"
+                                    autoCapitalize="off"
+                                    spellCheck="false"
+                                    data-form-type="other"
                                     {...field}
                                     disabled={isLoading}
                                 />
@@ -81,6 +86,7 @@ export function LoginForm() {
                                         type={showPassword ? 'text' : 'password'}
                                         placeholder="Enter your password"
                                         className="bg-transparent border-card-border text-text-primary placeholder:text-text-muted focus:border-nebula-purple focus:ring-nebula-purple pr-10 h-12 text-base"
+                                        autoComplete="current-password"
                                         {...field}
                                         disabled={isLoading}
                                     />
@@ -88,7 +94,7 @@ export function LoginForm() {
                                         type="button"
                                         variant="ghost"
                                         size="sm"
-                                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-text-muted hover:text-text-primary"
+                                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-text-muted hover:text-text-primary z-10"
                                         onClick={() => setShowPassword(!showPassword)}
                                         disabled={isLoading}
                                     >
