@@ -192,18 +192,18 @@ GoSwift/
 - [x] Password Hashing: Sử dụng bcrypt với strength validation
 - [x] Input Validation: Validate email, password, display_name
 
-#### 2.2 JWT Authentication
-- [ ] JWT token generation
-- [ ] Token validation middleware
-- [ ] Refresh token logic
-- [ ] Session management
+#### 2.2 JWT Authentication ✅ **COMPLETED**
+- [x] JWT token generation
+- [x] Token validation middleware
+- [x] Refresh token logic
+- [x] Session management
 
-#### 2.3 Auth Endpoints
-- [ ] Register endpoint (`POST /api/v1/auth/register`)
-- [ ] Login endpoint (`POST /api/v1/auth/login`)
-- [ ] Logout endpoint (`POST /api/v1/auth/logout`)
-- [ ] Refresh token endpoint (`POST /api/v1/auth/refresh`)
-- [ ] Profile endpoint (`GET /api/v1/auth/profile`)
+#### 2.3 Auth Endpoints ✅ **COMPLETED**
+- [x] Register endpoint (`POST /api/v1/auth/register`)
+- [x] Login endpoint (`POST /api/v1/auth/login`)
+- [x] Logout endpoint (`POST /api/v1/auth/logout`)
+- [x] Refresh token endpoint (`POST /api/v1/auth/refresh`)
+- [x] Profile endpoint (`GET /api/v1/auth/profile`)
 
 #### 2.4 Basic Frontend
 - [ ] Simple login/register forms

@@ -25,4 +25,7 @@ var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrEmailExists        = errors.New("email already exists")
 	ErrInvalidCredentials = errors.New("invalid email or password")
+
+	// UUID errors
+	ErrInvalidUUID = errors.New("invalid UUID format")
 )

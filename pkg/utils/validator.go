@@ -3,19 +3,18 @@ package utils
 import (
 	"regexp"
 	"strings"
-)
 
-// Email validation regex
-var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	"github.com/google/uuid"
+)
 
 // ValidateEmail validates email format
 func ValidateEmail(email string) error {
-	email = strings.TrimSpace(email)
-
 	if email == "" {
 		return ErrEmailRequired
 	}
 
+	// Simple email regex
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	if !emailRegex.MatchString(email) {
 		return ErrInvalidEmail
 	}
@@ -25,8 +24,6 @@ func ValidateEmail(email string) error {
 
 // ValidateDisplayName validates display name
 func ValidateDisplayName(displayName string) error {
-	displayName = strings.TrimSpace(displayName)
-
 	if displayName == "" {
 		return ErrDisplayNameRequired
 	}
@@ -39,8 +36,9 @@ func ValidateDisplayName(displayName string) error {
 		return ErrDisplayNameTooLong
 	}
 
-	// Check for valid characters (letters, numbers, spaces, hyphens, underscores)
-	if !regexp.MustCompile(`^[a-zA-Z0-9\s\-_]+$`).MatchString(displayName) {
+	// Check for invalid characters
+	invalidCharsRegex := regexp.MustCompile(`[<>\"'&]`)
+	if invalidCharsRegex.MatchString(displayName) {
 		return ErrDisplayNameInvalidChars
 	}
 
@@ -53,22 +51,22 @@ func ValidatePasswordStrength(password string) error {
 		return ErrPasswordTooShort
 	}
 
-	// Check for at least one uppercase letter
+	// Check for uppercase letter
 	if !regexp.MustCompile(`[A-Z]`).MatchString(password) {
 		return ErrPasswordNoUppercase
 	}
 
-	// Check for at least one lowercase letter
+	// Check for lowercase letter
 	if !regexp.MustCompile(`[a-z]`).MatchString(password) {
 		return ErrPasswordNoLowercase
 	}
 
-	// Check for at least one number
+	// Check for number
 	if !regexp.MustCompile(`[0-9]`).MatchString(password) {
 		return ErrPasswordNoNumber
 	}
 
-	// Check for at least one special character
+	// Check for special character
 	if !regexp.MustCompile(`[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]`).MatchString(password) {
 		return ErrPasswordNoSpecialChar
 	}
@@ -76,19 +74,16 @@ func ValidatePasswordStrength(password string) error {
 	return nil
 }
 
-// ValidateUserInput validates all user input for registration
+// ValidateUserInput validates all user input fields
 func ValidateUserInput(email, password, displayName string) error {
-	// Validate email
 	if err := ValidateEmail(email); err != nil {
 		return err
 	}
 
-	// Validate password
 	if err := ValidatePasswordStrength(password); err != nil {
 		return err
 	}
 
-	// Validate display name
 	if err := ValidateDisplayName(displayName); err != nil {
 		return err
 	}
@@ -96,14 +91,40 @@ func ValidateUserInput(email, password, displayName string) error {
 	return nil
 }
 
-// SanitizeInput removes potentially dangerous characters
-func SanitizeInput(input string) string {
-	// Remove HTML tags
-	htmlRegex := regexp.MustCompile(`<[^>]*>`)
-	input = htmlRegex.ReplaceAllString(input, "")
+// ValidateUUID validates if a string is a valid UUID
+func ValidateUUID(id string) error {
+	if id == "" {
+		return ErrInvalidUUID
+	}
 
-	// Trim whitespace
+	// Parse UUID to check if it's valid
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return ErrInvalidUUID
+	}
+
+	return nil
+}
+
+// ValidateUUIDFromString validates UUID from string and returns parsed UUID
+func ValidateUUIDFromString(id string) (uuid.UUID, error) {
+	if err := ValidateUUID(id); err != nil {
+		return uuid.Nil, err
+	}
+
+	parsedUUID, err := uuid.Parse(id)
+	if err != nil {
+		return uuid.Nil, ErrInvalidUUID
+	}
+
+	return parsedUUID, nil
+}
+
+// SanitizeInput sanitizes user input
+func SanitizeInput(input string) string {
+	// Remove leading and trailing whitespace
 	input = strings.TrimSpace(input)
 
+	// Convert to lowercase for email
 	return input
 }

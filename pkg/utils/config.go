@@ -27,10 +27,9 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
-	// Load .env file
 	godotenv.Load()
 
-	return &Config{
+	config := &Config{
 		// Server
 		ServerPort: getEnv("SERVER_PORT", "8080"),
 		ServerHost: getEnv("SERVER_HOST", "localhost"),
@@ -46,8 +45,20 @@ func LoadConfig() *Config {
 
 		// JWT
 		JWTSecret:        getEnv("JWT_SECRET", ""),
-		JWTTokenDuration: time.Hour * 24, // 24 hours
+		JWTTokenDuration: time.Hour * 24,
 	}
+
+	// Validate required fields for production
+	if config.Env == "production" {
+		if config.JWTSecret == "" {
+			panic("JWT_SECRET is required in production")
+		}
+		if config.DBPassword == "" {
+			panic("DB_PASSWORD is required in production")
+		}
+	}
+
+	return config
 }
 
 func getEnv(key, defaultValue string) string {

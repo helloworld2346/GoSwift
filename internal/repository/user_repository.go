@@ -22,13 +22,13 @@ func NewUserRepository(db *database.DB) *UserRepository {
 // CreateUser creates a new user in the database
 func (r *UserRepository) CreateUser(user *models.User) error {
 	query := `
-		INSERT INTO users (id, email, password_hash, display_name, avatar_url, is_online, last_seen, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		INSERT INTO users (email, password_hash, display_name, avatar_url, is_online, last_seen, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING id
 	`
 
 	now := time.Now()
-	_, err := r.db.Exec(query,
-		user.ID,
+	err := r.db.QueryRow(query,
 		user.Email,
 		user.PasswordHash,
 		user.DisplayName,
@@ -37,7 +37,7 @@ func (r *UserRepository) CreateUser(user *models.User) error {
 		user.LastSeen,
 		now,
 		now,
-	)
+	).Scan(&user.ID)
 
 	if err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
