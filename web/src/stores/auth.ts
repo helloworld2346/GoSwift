@@ -22,8 +22,8 @@ interface AuthState {
     refreshToken: string | null;
 
     // Actions
-    login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string, display_name: string) => Promise<UserResponse>; // Thay đổi này
+    login: (email: string, password: string) => Promise<AuthResponse | null>;
+    register: (email: string, password: string, display_name: string) => Promise<UserResponse | null>; 
     logout: () => Promise<void>;
     getProfile: () => Promise<void>;
     clearError: () => void;
@@ -75,6 +75,8 @@ export const useAuthStore = create<AuthState>()(
                         isLoading: false,
                         error: null,
                     });
+
+                    return response; // Return success response
                 } catch (error) {
                     const errorMessage = error instanceof Error ? error.message : 'Login failed';
                     set({
@@ -83,6 +85,7 @@ export const useAuthStore = create<AuthState>()(
                     });
 
                     // Don't throw error, let UI handle it
+                    return null;
                 }
             },
 
@@ -103,6 +106,8 @@ export const useAuthStore = create<AuthState>()(
                         isLoading: false,
                         error: error instanceof Error ? error.message : 'Registration failed',
                     });
+
+                    // Throw error instead of returning null
                     throw error;
                 }
             },

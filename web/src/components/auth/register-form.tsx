@@ -11,15 +11,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { toast } from 'sonner';
 
 import { registerSchema, type RegisterFormData } from '@/lib/validations';
 import { useAuthStore } from '@/stores/auth';
+import { useToast } from '@/hooks/use-toast'; // Thay thế import toast
 
 export function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const { register, isLoading, error } = useAuthStore();
+    const { showSuccess, showError } = useToast(); // Sử dụng custom toast
 
     const form = useForm<RegisterFormData>({
         resolver: zodResolver(registerSchema),
@@ -31,12 +32,18 @@ export function RegisterForm() {
     });
 
     const onSubmit = async (data: RegisterFormData) => {
-        try {
-            await register(data.email, data.password, data.display_name);
-            toast.success('Registration successful! Please sign in.');
+        const result = await register(data.email, data.password, data.display_name);
+        if (result) {
+            // Registration successful
+            showSuccess('Registration successful! Please sign in.');
             router.push('/login');
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Registration failed');
+        } else {
+            // Registration failed - show error toast
+            if (error) {
+                showError(error);
+            } else {
+                showError('Registration failed. Please try again.');
+            }
         }
     };
 

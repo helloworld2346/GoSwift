@@ -14,7 +14,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/auth';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast'; // Thay thế import toast
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -24,14 +24,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const router = useRouter();
     const { user, logout, isLoading } = useAuthStore();
+    const { showSuccess, showError } = useToast(); // Sử dụng custom toast
 
     const handleLogout = async () => {
         try {
             await logout();
-            toast.success('Logged out successfully');
+            showSuccess('Logged out successfully');
             router.push('/');
         } catch (error) {
-            toast.error('Failed to logout');
+            showError('Failed to logout');
         }
     };
 

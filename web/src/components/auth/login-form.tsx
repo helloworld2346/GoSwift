@@ -9,18 +9,18 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { toast } from 'sonner';
 
 import { loginSchema, type LoginFormData } from '@/lib/validations';
 import { useAuthStore } from '@/stores/auth';
+import { useToast } from '@/hooks/use-toast'; // Thay thế import toast
 
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const { login, isLoading, error } = useAuthStore();
+    const { showSuccess, showError } = useToast(); // Sử dụng custom toast
 
     const form = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
@@ -31,12 +31,18 @@ export function LoginForm() {
     });
 
     const onSubmit = async (data: LoginFormData) => {
-        try {
-            await login(data.email, data.password);
-            toast.success('Login successful!');
+        const result = await login(data.email, data.password);
+        if (result) {
+            // Login successful
+            showSuccess('Login successful!');
             router.push('/dashboard');
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Login failed');
+        } else {
+            // Login failed - show error toast
+            if (error) {
+                showError(error);
+            } else {
+                showError('Login failed. Please check your credentials.');
+            }
         }
     };
 

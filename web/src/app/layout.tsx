@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner";
 import { AuthInitializer } from "@/components/auth/auth-initializer";
+import { ToastProvider } from "@/hooks/use-toast"; // Import ToastProvider
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,9 +19,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthInitializer />
-        {children}
-        <Toaster position="top-right" />
+        <ToastProvider> {/* Wrap toàn bộ app với ToastProvider */}
+          <AuthInitializer />
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );
