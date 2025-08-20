@@ -2,72 +2,59 @@ package main
 
 import (
 	"fmt"
-	"goswift/pkg/utils"
+	"time"
+
+	"goswift/internal/models"
+	"goswift/pkg/jwt"
+
+	"github.com/google/uuid"
 )
 
 func main() {
-	fmt.Println("Testing Input Validation...")
-	fmt.Println("===========================")
-	
-	// Test cases
-	testCases := []struct {
-		email       string
-		password    string
-		displayName string
-		description string
-	}{
-		{
-			email:       "test@example.com",
-			password:    "GoodPassword123!",
-			displayName: "John Doe",
-			description: "Valid input",
-		},
-		{
-			email:       "invalid-email",
-			password:    "GoodPassword123!",
-			displayName: "John Doe",
-			description: "Invalid email",
-		},
-		{
-			email:       "test@example.com",
-			password:    "weak",
-			displayName: "John Doe",
-			description: "Weak password",
-		},
-		{
-			email:       "test@example.com",
-			password:    "GoodPassword123!",
-			displayName: "J",
-			description: "Display name too short",
-		},
-		{
-			email:       "test@example.com",
-			password:    "GoodPassword123!",
-			displayName: "John<script>alert('xss')</script>",
-			description: "Display name with HTML",
-		},
+	// Create JWT manager
+	jwtManager := jwt.NewJWTManager("test-secret-key", time.Hour*24)
+
+	// Create test user
+	user := &models.User{
+		ID:          uuid.New(),
+		Email:       "test@example.com",
+		DisplayName: "Test User",
 	}
-	
-	for i, testCase := range testCases {
-		fmt.Printf("\nTest %d: %s\n", i+1, testCase.description)
-		fmt.Printf("Email: %s\n", testCase.email)
-		fmt.Printf("Password: %s\n", testCase.password)
-		fmt.Printf("Display Name: %s\n", testCase.displayName)
-		
-		err := utils.ValidateUserInput(testCase.email, testCase.password, testCase.displayName)
-		if err != nil {
-			fmt.Printf("❌ Error: %v\n", err)
-		} else {
-			fmt.Printf("✅ Valid input\n")
-		}
+
+	fmt.Println("Testing JWT Token Generation...")
+	fmt.Println("=================================")
+
+	// Generate token
+	token, err := jwtManager.GenerateToken(user)
+	if err != nil {
+		fmt.Printf("❌ Error generating token: %v\n", err)
+		return
 	}
+
+	fmt.Printf("✅ Token generated: %s\n", token[:50] + "...")
+
+	// Validate token
+	claims, err := jwtManager.ValidateToken(token)
+	if err != nil {
+		fmt.Printf("❌ Error validating token: %v\n", err)
+		return
+	}
+
+	fmt.Printf("✅ Token validated successfully!\n")
+	fmt.Printf("   User ID: %s\n", claims.UserID)
+	fmt.Printf("   Email: %s\n", claims.Email)
+	fmt.Printf("   Username: %s\n", claims.Username)
+	fmt.Printf("   Expires At: %s\n", claims.ExpiresAt.Time.Format(time.RFC3339))
+
+	// Test invalid token
+	fmt.Println("\nTesting Invalid Token...")
+	fmt.Println("========================")
 	
-	// Test sanitization
-	fmt.Println("\nTesting Input Sanitization...")
-	fmt.Println("=============================")
-	
-	dirtyInput := "  <script>alert('xss')</script>John Doe  "
-	cleanInput := utils.SanitizeInput(dirtyInput)
-	fmt.Printf("Dirty input: '%s'\n", dirtyInput)
-	fmt.Printf("Clean input: '%s'\n", cleanInput)
+	invalidToken := "invalid.token.here"
+	_, err = jwtManager.ValidateToken(invalidToken)
+	if err != nil {
+		fmt.Printf("✅ Invalid token correctly rejected: %v\n", err)
+	} else {
+		fmt.Printf("❌ Invalid token should have been rejected\n")
+	}
 }

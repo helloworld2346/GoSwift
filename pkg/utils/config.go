@@ -2,6 +2,7 @@ package utils
 
 import (
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -19,6 +20,10 @@ type Config struct {
 	DBUser     string
 	DBPassword string
 	DBSSLMode  string
+
+	// JWT
+	JWTSecret        string
+	JWTTokenDuration time.Duration
 }
 
 func LoadConfig() *Config {
@@ -38,6 +43,10 @@ func LoadConfig() *Config {
 		DBUser:     getEnv("DB_USER", "goswift"),
 		DBPassword: getEnv("DB_PASSWORD", ""),
 		DBSSLMode:  getEnv("DB_SSL_MODE", "disable"),
+
+		// JWT
+		JWTSecret:        getEnv("JWT_SECRET", ""),
+		JWTTokenDuration: time.Hour * 24, // 24 hours
 	}
 }
 
