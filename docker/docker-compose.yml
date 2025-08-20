@@ -1,0 +1,33 @@
+services:
+  postgres:
+    container_name: goswift-postgres
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: goswift
+      POSTGRES_USER: goswift
+      POSTGRES_PASSWORD: dev2346
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../migrations:/docker-entrypoint-initdb.d
+    networks:
+      - goswift-network
+
+  redis:
+    container_name: goswift-redis
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - goswift-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  goswift-network:
+    driver: bridge
