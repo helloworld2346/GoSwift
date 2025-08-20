@@ -41,107 +41,104 @@ export function LoginForm() {
             if (error) {
                 showError(error);
             } else {
-                showError('Login failed. Please check your credentials.');
+                showError('Oops! Your cosmic credentials seem to be lost in space. Please try again!');
             }
         }
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-            <Card className="w-full max-w-md">
-                <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
-                    <CardDescription className="text-center">
-                        Enter your credentials to access your account
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                            <FormField
-                                control={form.control}
-                                name="email"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Email</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="email"
-                                                placeholder="Enter your email"
-                                                {...field}
-                                                disabled={isLoading}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="text-text-primary">Email</FormLabel>
+                            <FormControl>
+                                <Input
+                                    type="email"
+                                    placeholder="Enter your email"
+                                    className="bg-transparent border-card-border text-text-primary placeholder:text-text-muted focus:border-nebula-purple focus:ring-nebula-purple h-12 text-base"
+                                    {...field}
+                                    disabled={isLoading}
+                                />
+                            </FormControl>
+                            <FormMessage className="form-message" />
+                        </FormItem>
+                    )}
+                />
 
-                            <FormField
-                                control={form.control}
-                                name="password"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Password</FormLabel>
-                                        <FormControl>
-                                            <div className="relative">
-                                                <Input
-                                                    type={showPassword ? 'text' : 'password'}
-                                                    placeholder="Enter your password"
-                                                    {...field}
-                                                    disabled={isLoading}
-                                                />
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    disabled={isLoading}
-                                                >
-                                                    {showPassword ? (
-                                                        <EyeOff className="h-4 w-4" />
-                                                    ) : (
-                                                        <Eye className="h-4 w-4" />
-                                                    )}
-                                                </Button>
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            {error && (
-                                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                                    {error}
+                <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="text-text-primary">Password</FormLabel>
+                            <FormControl>
+                                <div className="relative">
+                                    <Input
+                                        type={showPassword ? 'text' : 'password'}
+                                        placeholder="Enter your password"
+                                        className="bg-transparent border-card-border text-text-primary placeholder:text-text-muted focus:border-nebula-purple focus:ring-nebula-purple pr-10 h-12 text-base"
+                                        {...field}
+                                        disabled={isLoading}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-text-muted hover:text-text-primary"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        disabled={isLoading}
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="h-4 w-4" />
+                                        ) : (
+                                            <Eye className="h-4 w-4" />
+                                        )}
+                                    </Button>
                                 </div>
-                            )}
+                            </FormControl>
+                            <FormMessage className="form-message" />
+                        </FormItem>
+                    )}
+                />
 
-                            <Button type="submit" className="w-full" disabled={isLoading}>
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Signing in...
-                                    </>
-                                ) : (
-                                    'Sign in'
-                                )}
-                            </Button>
-                        </form>
-                    </Form>
-
-                    <div className="mt-6 text-center text-sm">
-                        <span className="text-gray-600">Don't have an account? </span>
-                        <Link
-                            href="/register"
-                            className="font-medium text-blue-600 hover:text-blue-500"
-                        >
-                            Sign up
-                        </Link>
+                {error && (
+                    <div className="cosmic-error-container">
+                        <div className="cosmic-error-content">
+                            <div className="cosmic-error-icon">🚀</div>
+                            <div className="cosmic-error-text">
+                                <div className="cosmic-error-title">Mission Failed!</div>
+                                <div className="cosmic-error-message">{error}</div>
+                            </div>
+                            <div className="cosmic-error-particles">
+                                <div className="particle"></div>
+                                <div className="particle"></div>
+                                <div className="particle"></div>
+                                <div className="particle"></div>
+                                <div className="particle"></div>
+                            </div>
+                        </div>
                     </div>
-                </CardContent>
-            </Card>
-        </div>
+                )}
+
+                <Button
+                    type="submit"
+                    className="gradient-button w-full text-xl py-6 px-8"
+                    disabled={isLoading}
+                >
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Signing in...
+                        </>
+                    ) : (
+                        'Sign In to Your Adventure'
+                    )}
+                </Button>
+            </form>
+        </Form>
     );
 }

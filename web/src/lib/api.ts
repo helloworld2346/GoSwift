@@ -72,7 +72,27 @@ class ApiClient {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+
+            // Custom error messages for space theme
+            let customMessage = errorData.error || `HTTP error! status: ${response.status}`;
+
+            // Transform common error messages to space theme
+            if (customMessage.includes('Invalid email or password') ||
+                customMessage.includes('invalid credentials') ||
+                customMessage.includes('authentication failed')) {
+                customMessage = 'Oops! Your cosmic credentials seem to be lost in space. Please try again!';
+            } else if (customMessage.includes('email already exists') ||
+                customMessage.includes('duplicate email')) {
+                customMessage = 'This cosmic traveler already exists in our universe! Try a different email.';
+            } else if (customMessage.includes('password') && customMessage.includes('weak')) {
+                customMessage = 'Your password needs more cosmic strength! Add uppercase, lowercase, numbers, and special characters.';
+            } else if (customMessage.includes('email') && customMessage.includes('invalid')) {
+                customMessage = 'Please enter a valid cosmic email address!';
+            } else if (customMessage.includes('display_name') && customMessage.includes('invalid')) {
+                customMessage = 'Your display name contains forbidden cosmic symbols! Use only letters, numbers, spaces, hyphens, and underscores.';
+            }
+
+            throw new Error(customMessage);
         }
 
         return response.json();
