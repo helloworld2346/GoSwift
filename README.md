@@ -60,11 +60,16 @@ GoSwift/
 │   │   ├── connection.go
 │   │   ├── hub.go
 │   │   └── message.go
-│   ├── database/               # PostgreSQL operations
-│   │   ├── connection.go
+│   ├── database/               # Database connection & migrations
+│   │   └── connection.go
+│   ├── repository/             # Data access layer (CRUD operations)
 │   │   ├── user_repository.go
 │   │   ├── conversation_repository.go
 │   │   └── message_repository.go
+│   ├── service/                # Business logic layer
+│   │   ├── auth_service.go
+│   │   ├── chat_service.go
+│   │   └── user_service.go
 │   ├── cache/                  # Redis operations
 │   │   ├── client.go
 │   │   ├── session.go
@@ -77,11 +82,13 @@ GoSwift/
 │   │   ├── client.go
 │   │   ├── upload.go
 │   │   └── download.go
-│   └── middleware/             # Gin middleware
-│       ├── auth.go
-│       ├── cors.go
-│       ├── logging.go
-│       └── rate_limit.go
+│   ├── middleware/             # Gin middleware
+│   │   ├── auth.go
+│   │   ├── cors.go
+│   │   ├── logging.go
+│   │   └── rate_limit.go
+│   └── router/                 # Router setup
+│       └── router.go
 ├── pkg/
 │   ├── encryption/             # Encryption utilities
 │   │   ├── aes.go
@@ -176,14 +183,14 @@ GoSwift/
 - [x] Health check endpoints
 - [x] Swagger UI accessible
 
-### Phase 2: Authentication System (Tuần 2)
+### Phase 2: Authentication System (Tuần 2) 🔄 **IN PROGRESS**
 **Mục tiêu**: User có thể đăng ký, đăng nhập
 
-#### 2.1 User Management
-- [ ] User model và repository
-- [ ] Password hashing với bcrypt
-- [ ] User CRUD operations
-- [ ] Input validation
+#### 2.1 User Management ✅ **COMPLETED**
+- [x] User Model: Tạo struct User với validation
+- [x] User Repository: CRUD operations cho database (Clean Architecture)
+- [x] Password Hashing: Sử dụng bcrypt với strength validation
+- [x] Input Validation: Validate email, password, display_name
 
 #### 2.2 JWT Authentication
 - [ ] JWT token generation
@@ -192,10 +199,11 @@ GoSwift/
 - [ ] Session management
 
 #### 2.3 Auth Endpoints
-- [ ] Register endpoint (`POST /api/auth/register`)
-- [ ] Login endpoint (`POST /api/auth/login`)
-- [ ] Logout endpoint (`POST /api/auth/logout`)
-- [ ] Refresh token endpoint (`POST /api/auth/refresh`)
+- [ ] Register endpoint (`POST /api/v1/auth/register`)
+- [ ] Login endpoint (`POST /api/v1/auth/login`)
+- [ ] Logout endpoint (`POST /api/v1/auth/logout`)
+- [ ] Refresh token endpoint (`POST /api/v1/auth/refresh`)
+- [ ] Profile endpoint (`GET /api/v1/auth/profile`)
 
 #### 2.4 Basic Frontend
 - [ ] Simple login/register forms
@@ -299,3 +307,44 @@ make migrate
 # Start application
 make run
 ```
+
+## 🏗️ Architecture Overview
+
+### Clean Architecture Pattern
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Presentation Layer                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│  │   Handlers  │  │   Router    │  │ Middleware  │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                    Business Logic Layer                     │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│  │ Auth Service│  │ Chat Service│  │User Service │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                    Data Access Layer                        │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│  │User Repo    │  │Chat Repo    │  │Message Repo │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                    Infrastructure Layer                     │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│  │ PostgreSQL  │  │    Redis    │  │   MinIO     │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Package Responsibilities
+- **Handlers**: HTTP request/response handling
+- **Router**: Route definitions and middleware setup
+- **Service**: Business logic and orchestration
+- **Repository**: Data access and CRUD operations
+- **Models**: Data structures and validation
+- **Database**: Connection management and migrations
