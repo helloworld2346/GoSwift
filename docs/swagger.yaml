@@ -8,6 +8,8 @@ definitions:
         type: string
       message:
         type: string
+      redis:
+        type: string
       status:
         type: string
       version:

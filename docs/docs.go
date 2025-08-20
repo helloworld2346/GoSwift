@@ -282,6 +282,9 @@ const docTemplate = `{
                 "message": {
                     "type": "string"
                 },
+                "redis": {
+                    "type": "string"
+                },
                 "status": {
                     "type": "string"
                 },
