@@ -1,6 +1,6 @@
 # GoSwift - Simple Makefile
 
-.PHONY: help deps run up down migrate
+.PHONY: help deps run up down migrate swagger build-swagger
 
 # Default
 help:
@@ -41,3 +41,11 @@ migrate:
 		go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest; \
 		migrate -path migrations -database "postgres://goswift:dev2346@localhost:5432/goswift?sslmode=disable" up; \
 	fi
+
+# Swagger
+swagger:
+	@echo "�� Generating Swagger documentation..."
+	swag init -g cmd/server/main.go -o docs
+
+# Build with swagger
+build-swagger: swagger build
