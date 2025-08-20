@@ -28,6 +28,7 @@ volumes:
   postgres_data:
   redis_data:
 
+
 networks:
   goswift-network:
     driver: bridge

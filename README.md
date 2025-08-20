@@ -54,6 +54,7 @@ GoSwift/
 │   ├── handlers/               # Gin HTTP handlers
 │   │   ├── auth.go
 │   │   ├── chat.go
+│   │   ├── health.go
 │   │   ├── user.go
 │   │   └── file.go
 │   ├── websocket/              # WebSocket management
@@ -71,9 +72,7 @@ GoSwift/
 │   │   ├── chat_service.go
 │   │   └── user_service.go
 │   ├── cache/                  # Redis operations
-│   │   ├── client.go
-│   │   ├── session.go
-│   │   └── message.go
+│   │   └── redis.go
 │   ├── queue/                  # Kafka operations
 │   │   ├── producer.go
 │   │   ├── consumer.go
@@ -88,7 +87,8 @@ GoSwift/
 │   │   ├── logging.go
 │   │   └── rate_limit.go
 │   └── router/                 # Router setup
-│       └── router.go
+│       ├── router.go
+│       └── auth_routes.go
 ├── pkg/
 │   ├── encryption/             # Encryption utilities
 │   │   ├── aes.go
@@ -183,7 +183,7 @@ GoSwift/
 - [x] Health check endpoints
 - [x] Swagger UI accessible
 
-### Phase 2: Authentication System (Tuần 2) 🔄 **IN PROGRESS**
+### Phase 2: Authentication System (Tuần 2) ✅ **COMPLETED**
 **Mục tiêu**: User có thể đăng ký, đăng nhập
 
 #### 2.1 User Management ✅ **COMPLETED**
@@ -205,7 +205,14 @@ GoSwift/
 - [x] Refresh token endpoint (`POST /api/v1/auth/refresh`)
 - [x] Profile endpoint (`GET /api/v1/auth/profile`)
 
-#### 2.4 Basic Frontend
+#### 2.4 Security Features ✅ **COMPLETED**
+- [x] Token Blacklisting với Redis
+- [x] Rate Limiting (100 requests/minute)
+- [x] CORS Configuration (Development/Production)
+- [x] JWT Secret Validation
+- [x] Enhanced Health Check (Database + Redis)
+
+#### 2.5 Basic Frontend
 - [ ] Simple login/register forms
 - [ ] Token storage trong localStorage
 - [ ] Basic navigation
@@ -241,11 +248,11 @@ GoSwift/
 ### Phase 4: Enhanced Features (Tuần 5-6)
 **Mục tiêu**: Thêm các tính năng nâng cao
 
-#### 4.1 Redis Integration
-- [ ] Session caching
-- [ ] Online status management
-- [ ] Recent messages cache
-- [ ] Rate limiting
+#### 4.1 Redis Integration ✅ **PARTIALLY COMPLETED**
+- [x] Session caching
+- [x] Online status management
+- [x] Recent messages cache
+- [x] Rate limiting ✅ **COMPLETED**
 
 #### 4.2 MinIO File Storage
 - [ ] File upload/download endpoints
@@ -262,11 +269,11 @@ GoSwift/
 ### Phase 5: Polish & Security (Tuần 7-8)
 **Mục tiêu**: Hoàn thiện và bảo mật
 
-#### 5.1 Security Features
+#### 5.1 Security Features ✅ **PARTIALLY COMPLETED**
 - [ ] Message encryption (AES-256)
-- [ ] Rate limiting implementation
-- [ ] Input validation và sanitization
-- [ ] CORS configuration
+- [x] Rate limiting implementation ✅ **COMPLETED**
+- [x] Input validation và sanitization ✅ **COMPLETED**
+- [x] CORS configuration ✅ **COMPLETED**
 
 #### 5.2 Advanced Features
 - [ ] Group chat management

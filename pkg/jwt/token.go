@@ -1,9 +1,11 @@
 package jwt
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"goswift/internal/cache"
 	"goswift/internal/models"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -12,6 +14,7 @@ import (
 type JWTManager struct {
 	secretKey     string
 	tokenDuration time.Duration
+	redisClient   *cache.RedisClient
 }
 
 type Claims struct {
@@ -21,10 +24,11 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func NewJWTManager(secretKey string, tokenDuration time.Duration) *JWTManager {
+func NewJWTManager(secretKey string, tokenDuration time.Duration, redisClient *cache.RedisClient) *JWTManager {
 	return &JWTManager{
 		secretKey:     secretKey,
 		tokenDuration: tokenDuration,
+		redisClient:   redisClient,
 	}
 }
 
@@ -49,6 +53,11 @@ func (manager *JWTManager) GenerateToken(user *models.User) (string, error) {
 
 // ValidateToken validates the JWT token and returns the claims
 func (manager *JWTManager) ValidateToken(accessToken string) (*Claims, error) {
+	// Check if token is blacklisted
+	if manager.IsTokenBlacklisted(accessToken) {
+		return nil, fmt.Errorf("token is blacklisted")
+	}
+
 	token, err := jwt.ParseWithClaims(
 		accessToken,
 		&Claims{},
@@ -72,6 +81,40 @@ func (manager *JWTManager) ValidateToken(accessToken string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+// BlacklistToken adds token to blacklist
+func (manager *JWTManager) BlacklistToken(token string, expiration time.Duration) error {
+	ctx := context.Background()
+	key := "blacklist:" + token
+
+	// Get token expiration time
+	parsedToken, _ := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		return []byte(manager.secretKey), nil
+	})
+
+	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok {
+		if exp, ok := claims["exp"].(float64); ok {
+			expTime := time.Unix(int64(exp), 0)
+			remainingTime := time.Until(expTime)
+
+			if remainingTime > 0 {
+				return manager.redisClient.GetClient().Set(ctx, key, "1", remainingTime).Err()
+			}
+		}
+	}
+
+	// Fallback to default expiration
+	return manager.redisClient.GetClient().Set(ctx, key, "1", expiration).Err()
+}
+
+// IsTokenBlacklisted checks if token is blacklisted
+func (manager *JWTManager) IsTokenBlacklisted(token string) bool {
+	ctx := context.Background()
+	key := "blacklist:" + token
+
+	_, err := manager.redisClient.GetClient().Get(ctx, key).Result()
+	return err == nil
 }
 
 // GenerateRefreshToken generates a refresh token

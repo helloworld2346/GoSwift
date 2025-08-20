@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"goswift/internal/cache"
 	"goswift/internal/database"
 	"goswift/internal/router"
 	"goswift/pkg/utils"
@@ -30,6 +31,8 @@ import (
 // @name Authorization
 // @description Type "Bearer" followed by a space and JWT token.
 
+// @security BearerAuth
+
 func main() {
 	// Load configuration
 	config := utils.LoadConfig()
@@ -41,8 +44,15 @@ func main() {
 	}
 	defer db.Close()
 
+	// Connect to Redis
+	redisClient, err := cache.NewRedisConnection(config)
+	if err != nil {
+		log.Fatal("❌ Failed to connect to Redis:", err)
+	}
+	defer redisClient.Close()
+
 	// Setup router
-	r := router.SetupRouter(config, db)
+	r := router.SetupRouter(config, db, redisClient)
 
 	// Start server
 	addr := ":" + config.ServerPort

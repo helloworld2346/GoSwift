@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"goswift/internal/cache"
 	"goswift/internal/database"
 	"goswift/pkg/utils"
 
@@ -11,12 +12,23 @@ import (
 
 type HealthHandler struct {
 	db     *database.DB
+	redis  *cache.RedisClient
 	config *utils.Config
 }
 
-func NewHealthHandler(db *database.DB, config *utils.Config) *HealthHandler {
+type HealthResponse struct {
+	Status   string `json:"status"`
+	Message  string `json:"message"`
+	Version  string `json:"version"`
+	Env      string `json:"env"`
+	Database string `json:"database"`
+	Redis    string `json:"redis"`
+}
+
+func NewHealthHandler(db *database.DB, redis *cache.RedisClient, config *utils.Config) *HealthHandler {
 	return &HealthHandler{
 		db:     db,
+		redis:  redis,
 		config: config,
 	}
 }
@@ -35,21 +47,20 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 		dbStatus = "error"
 	}
 
+	// Check Redis health
+	redisStatus := "ok"
+	if err := h.redis.HealthCheck(); err != nil {
+		redisStatus = "error"
+	}
+
 	response := HealthResponse{
 		Status:   "ok",
 		Message:  "GoSwift server is running!",
 		Version:  "1.0.0",
 		Env:      h.config.Env,
 		Database: dbStatus,
+		Redis:    redisStatus,
 	}
 
 	c.JSON(http.StatusOK, response)
-}
-
-type HealthResponse struct {
-	Status   string `json:"status"`
-	Message  string `json:"message"`
-	Version  string `json:"version"`
-	Env      string `json:"env"`
-	Database string `json:"database"`
 }

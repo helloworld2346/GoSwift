@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"goswift/internal/models"
 	"goswift/internal/service"
@@ -159,8 +160,39 @@ func (h *AuthHandler) GetProfile(c *gin.Context) {
 // @Failure 401 {object} map[string]string
 // @Router /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
-	// In a real app, you'd add token to blacklist
-	// For now, just return success
+	// Get token from Authorization header (middleware đã validate rồi)
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Authorization header is required",
+		})
+		return
+	}
+
+	// Auto-add "Bearer " prefix if not present (giống middleware)
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		authHeader = "Bearer " + authHeader
+	}
+
+	// Extract token
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid authorization header format",
+		})
+		return
+	}
+
+	token := tokenParts[1]
+
+	// Blacklist the token
+	if err := h.authService.Logout(token); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to logout",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Logged out successfully",
 	})

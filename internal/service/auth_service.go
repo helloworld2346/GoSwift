@@ -127,3 +127,9 @@ func (s *AuthService) GetUserByID(userID uuid.UUID) (*models.UserResponse, error
 		CreatedAt:   user.CreatedAt,
 	}, nil
 }
+
+// Logout invalidates the user's token
+func (s *AuthService) Logout(token string) error {
+	// Blacklist the token
+	return s.jwtManager.BlacklistToken(token, time.Hour*24)
+}

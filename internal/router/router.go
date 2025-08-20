@@ -3,6 +3,7 @@ package router
 import (
 	"time"
 
+	"goswift/internal/cache"
 	"goswift/internal/database"
 	"goswift/internal/handlers"
 	"goswift/internal/middleware"
@@ -16,7 +17,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func SetupRouter(config *utils.Config, db *database.DB) *gin.Engine {
+func SetupRouter(config *utils.Config, db *database.DB, redisClient *cache.RedisClient) *gin.Engine {
 	// Set Gin mode
 	if config.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -34,14 +35,14 @@ func SetupRouter(config *utils.Config, db *database.DB) *gin.Engine {
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
 
-	// Initialize JWT manager
-	jwtManager := jwt.NewJWTManager(config.JWTSecret, config.JWTTokenDuration)
+	// Initialize JWT manager with Redis
+	jwtManager := jwt.NewJWTManager(config.JWTSecret, config.JWTTokenDuration, redisClient)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtManager)
 
 	// Initialize handlers
-	healthHandler := handlers.NewHealthHandler(db, config)
+	healthHandler := handlers.NewHealthHandler(db, redisClient, config)
 	authHandler := handlers.NewAuthHandler(authService)
 
 	// Health check endpoint (root level)

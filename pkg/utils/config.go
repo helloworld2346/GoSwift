@@ -21,6 +21,12 @@ type Config struct {
 	DBPassword string
 	DBSSLMode  string
 
+	// Redis
+	RedisHost     string
+	RedisPort     string
+	RedisPassword string
+	RedisDB       int
+
 	// JWT
 	JWTSecret        string
 	JWTTokenDuration time.Duration
@@ -42,6 +48,12 @@ func LoadConfig() *Config {
 		DBUser:     getEnv("DB_USER", "goswift"),
 		DBPassword: getEnv("DB_PASSWORD", ""),
 		DBSSLMode:  getEnv("DB_SSL_MODE", "disable"),
+
+		// Redis
+		RedisHost:     getEnv("REDIS_HOST", "localhost"),
+		RedisPort:     getEnv("REDIS_PORT", "6379"),
+		RedisPassword: getEnv("REDIS_PASSWORD", ""),
+		RedisDB:       0,
 
 		// JWT
 		JWTSecret:        getEnv("JWT_SECRET", ""),
@@ -75,4 +87,8 @@ func (c *Config) GetDBConnectionString() string {
 		" password=" + c.DBPassword +
 		" dbname=" + c.DBName +
 		" sslmode=" + c.DBSSLMode
+}
+
+func (c *Config) GetRedisConnectionString() string {
+	return c.RedisHost + ":" + c.RedisPort
 }
