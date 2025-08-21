@@ -1,19 +1,19 @@
 package repository
 
 import (
-	"database/sql"
 	"time"
 
+	"goswift/internal/database"
 	"goswift/internal/models"
 
 	"github.com/google/uuid"
 )
 
 type ConversationRepository struct {
-	db *sql.DB
+	db *database.DB
 }
 
-func NewConversationRepository(db *sql.DB) *ConversationRepository {
+func NewConversationRepository(db *database.DB) *ConversationRepository {
 	return &ConversationRepository{db: db}
 }
 

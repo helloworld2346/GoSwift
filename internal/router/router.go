@@ -38,12 +38,16 @@ func SetupRouter(config *utils.Config, db *database.DB, redisClient *cache.Redis
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
+	conversationRepo := repository.NewConversationRepository(db)
+	messageRepo := repository.NewMessageRepository(db)
+	participantRepo := repository.NewParticipantRepository(db)
 
 	// Initialize JWT manager with Redis
 	jwtManager := jwt.NewJWTManager(config.JWTSecret, config.JWTTokenDuration, redisClient)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtManager)
+	chatService := service.NewChatService(conversationRepo, messageRepo, participantRepo, userRepo)
 
 	// Initialize WebSocket manager
 	wsManager := websocket.NewManager()
@@ -52,6 +56,7 @@ func SetupRouter(config *utils.Config, db *database.DB, redisClient *cache.Redis
 	// Initialize handlers
 	healthHandler := handlers.NewHealthHandler(db, redisClient, config)
 	authHandler := handlers.NewAuthHandler(authService)
+	chatHandler := handlers.NewChatHandler(chatService)
 	wsHandler := websocket.NewHandler(wsManager)
 
 	// Health check endpoint (root level)
@@ -69,6 +74,9 @@ func SetupRouter(config *utils.Config, db *database.DB, redisClient *cache.Redis
 
 	// Setup auth routes
 	SetupAuthRoutes(r, authHandler, jwtManager)
+
+	// Setup chat routes
+	SetupChatRoutes(r, chatHandler, middleware.AuthMiddleware(jwtManager))
 
 	// Swagger documentation
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

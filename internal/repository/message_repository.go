@@ -1,19 +1,19 @@
 package repository
 
 import (
-	"database/sql"
 	"time"
 
+	"goswift/internal/database"
 	"goswift/internal/models"
 
 	"github.com/google/uuid"
 )
 
 type MessageRepository struct {
-	db *sql.DB
+	db *database.DB
 }
 
-func NewMessageRepository(db *sql.DB) *MessageRepository {
+func NewMessageRepository(db *database.DB) *MessageRepository {
 	return &MessageRepository{db: db}
 }
 

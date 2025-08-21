@@ -1,19 +1,19 @@
 package repository
 
 import (
-	"database/sql"
 	"time"
 
+	"goswift/internal/database"
 	"goswift/internal/models"
 
 	"github.com/google/uuid"
 )
 
 type ParticipantRepository struct {
-	db *sql.DB
+	db *database.DB
 }
 
-func NewParticipantRepository(db *sql.DB) *ParticipantRepository {
+func NewParticipantRepository(db *database.DB) *ParticipantRepository {
 	return &ParticipantRepository{db: db}
 }
 
