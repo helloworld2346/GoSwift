@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -19,8 +19,13 @@ import { useToast } from '@/hooks/use-toast'; // Thay thế import toast
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
-    const { login, isLoading, error } = useAuthStore();
+    const { login, isLoading, error, clearError } = useAuthStore();
     const { showSuccess, showError } = useToast(); // Sử dụng custom toast
+
+    // Clear error when component mounts
+    useEffect(() => {
+        clearError();
+    }, [clearError]);
 
     const form = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
@@ -30,11 +35,18 @@ export function LoginForm() {
         },
     });
 
+    // Clear error when user starts typing
+    const handleInputChange = () => {
+        if (error) {
+            clearError();
+        }
+    };
+
     const onSubmit = async (data: LoginFormData) => {
         const result = await login(data.email, data.password);
         if (result) {
             // Login successful
-            showSuccess('Login successful!');
+            showSuccess('Welcome back, space explorer! Your journey continues...');
             router.push('/dashboard');
         } else {
             // Login failed - show error toast
@@ -67,6 +79,10 @@ export function LoginForm() {
                                     data-form-type="other"
                                     {...field}
                                     disabled={isLoading}
+                                    onChange={(e) => {
+                                        field.onChange(e);
+                                        handleInputChange();
+                                    }}
                                 />
                             </FormControl>
                             <FormMessage className="form-message" />
@@ -88,6 +104,10 @@ export function LoginForm() {
                                         autoComplete="current-password"
                                         {...field}
                                         disabled={isLoading}
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            handleInputChange();
+                                        }}
                                     />
                                     <Button
                                         type="button"

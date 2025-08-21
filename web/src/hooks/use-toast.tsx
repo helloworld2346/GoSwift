@@ -26,19 +26,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         setToasts(prev => prev.filter(toast => toast.id !== id));
     }, []);
 
-    const showSuccess = useCallback((message: string, title: string = 'Success') => {
+    const showSuccess = useCallback((message: string, title: string = 'Mission Accomplished! 🚀') => {
         addToast({ type: 'success', title, message });
     }, [addToast]);
 
-    const showError = useCallback((message: string, title: string = 'Error') => {
+    const showError = useCallback((message: string, title: string = 'Mission Failed! 💥') => {
         addToast({ type: 'error', title, message });
     }, [addToast]);
 
-    const showInfo = useCallback((message: string, title: string = 'Info') => {
+    const showInfo = useCallback((message: string, title: string = 'Cosmic Update ⭐') => {
         addToast({ type: 'info', title, message });
     }, [addToast]);
 
-    const showWarning = useCallback((message: string, title: string = 'Warning') => {
+    const showWarning = useCallback((message: string, title: string = 'Warning Signal! 🛡️') => {
         addToast({ type: 'warning', title, message });
     }, [addToast]);
 

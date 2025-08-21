@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -19,8 +19,13 @@ import { PasswordRequirements } from '@/components/auth/password-requirements';
 export function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
-    const { register, isLoading, error } = useAuthStore();
+    const { register, isLoading, error, clearError } = useAuthStore();
     const { showSuccess, showError } = useToast();
+
+    // Clear error when component mounts
+    useEffect(() => {
+        clearError();
+    }, [clearError]);
     const form = useForm<RegisterFormData>({
         resolver: zodResolver(registerSchema),
         defaultValues: {
@@ -30,6 +35,13 @@ export function RegisterForm() {
         },
     });
 
+    // Clear error when user starts typing
+    const handleInputChange = () => {
+        if (error) {
+            clearError();
+        }
+    };
+
     // Use custom hook for password requirements
     const { passwordRequirements } = usePasswordRequirements({ form });
 
@@ -37,14 +49,14 @@ export function RegisterForm() {
         const result = await register(data.email, data.password, data.display_name);
         if (result) {
             // Registration successful
-            showSuccess('Registration successful! Please sign in.');
+            showSuccess('Your cosmic account has been created! Ready to explore the universe?');
             router.push('/login');
         } else {
             // Registration failed - show error toast
             if (error) {
                 showError(error);
             } else {
-                showError('Registration failed. Please try again.');
+                showError('Unable to launch your account. Please check your coordinates and try again.');
             }
         }
     };
@@ -70,6 +82,10 @@ export function RegisterForm() {
                                     data-form-type="other"
                                     {...field}
                                     disabled={isLoading}
+                                    onChange={(e) => {
+                                        field.onChange(e);
+                                        handleInputChange();
+                                    }}
                                 />
                             </FormControl>
                             <FormMessage className="form-message" />
@@ -95,6 +111,10 @@ export function RegisterForm() {
                                     data-form-type="other"
                                     {...field}
                                     disabled={isLoading}
+                                    onChange={(e) => {
+                                        field.onChange(e);
+                                        handleInputChange();
+                                    }}
                                 />
                             </FormControl>
                             <FormMessage className="form-message" />
@@ -116,6 +136,10 @@ export function RegisterForm() {
                                         autoComplete="new-password"
                                         {...field}
                                         disabled={isLoading}
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            handleInputChange();
+                                        }}
                                     />
                                     <Button
                                         type="button"
