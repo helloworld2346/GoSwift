@@ -20,6 +20,7 @@ interface AuthState {
     error: string | null;
     isInitialized: boolean; // Track if initial auth check is done
     refreshToken: string | null;
+    isLoggingOut: boolean; // Track logout state to prevent race conditions
 
     // Actions
     login: (email: string, password: string) => Promise<boolean>;
@@ -41,13 +42,21 @@ export const useAuthStore = create<AuthState>()(
             error: null,
             isInitialized: false,
             refreshToken: null,
+            isLoggingOut: false,
 
             setLoading: (loading) => set({ isLoading: loading }),
 
             clearError: () => set({ error: null }),
 
             initialize: async () => {
-                const { token } = get();
+                const { token, isLoggingOut } = get();
+
+                // Don't initialize if currently logging out
+                if (isLoggingOut) {
+                    set({ isInitialized: true });
+                    return;
+                }
+
                 if (token) {
                     try {
                         await get().getProfile();
@@ -114,10 +123,24 @@ export const useAuthStore = create<AuthState>()(
             },
 
             logout: async () => {
-                try {
-                    set({ isLoading: true });
+                // Prevent multiple logout calls
+                if (get().isLoggingOut) {
+                    return;
+                }
 
-                    await apiClient.logout();
+                try {
+                    set({ isLoading: true, isLoggingOut: true });
+
+                    // Get current token before clearing state
+                    const currentToken = get().token;
+
+                    if (currentToken) {
+                        try {
+                            await apiClient.logout(currentToken);
+                        } catch (error) {
+                            console.error('Logout API error:', error);
+                        }
+                    }
                 } catch (error) {
                     console.error('Logout error:', error);
                 } finally {
@@ -127,6 +150,7 @@ export const useAuthStore = create<AuthState>()(
                         isAuthenticated: false,
                         isLoading: false,
                         error: null,
+                        isLoggingOut: false,
                     });
                 }
             },

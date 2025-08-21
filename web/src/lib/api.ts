@@ -154,7 +154,30 @@ class ApiClient {
         return this.request<UserResponse>('/auth/profile');
     }
 
-    async logout(): Promise<{ message: string }> {
+    async logout(token?: string): Promise<{ message: string }> {
+        // If token is provided, use it directly; otherwise use the default request method
+        if (token) {
+            const url = `${this.baseURL}/auth/logout`;
+            const config: RequestInit = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            };
+
+            const response = await fetch(url, config);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                let customMessage = errorData.error || `HTTP error! status: ${response.status}`;
+                throw new Error(customMessage);
+            }
+
+            return response.json();
+        }
+
+        // Fallback to default request method
         return this.request<{ message: string }>('/auth/logout', {
             method: 'POST',
         });

@@ -12,7 +12,8 @@ import {
     Users,
     Bell,
     Shield,
-    Zap
+    Zap,
+    Loader2
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -26,23 +27,19 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
-    const { user, isLoading } = useAuthStore();
+    const { user, isLoading, isLoggingOut } = useAuthStore();
     const { showSuccess, showError } = useToast();
 
     const handleLogout = async () => {
-        try {
-            // Call logout API first (while token still exists)
-            try {
-                await apiClient.logout();
-            } catch (error) {
-                console.error('Logout API error:', error);
-            }
+        if (isLoggingOut) return; // Prevent multiple clicks
 
+        try {
             // Clear auth state - AuthGuard will handle redirect
-            useAuthStore.getState().logout();
+            await useAuthStore.getState().logout();
 
             showSuccess('See you in the cosmos, space explorer!');
         } catch (error) {
+            console.error('❌ Logout failed:', error);
             showError('Failed to logout');
         }
     };
@@ -157,14 +154,22 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                             variant="ghost"
                             className="w-full justify-start text-text-muted hover:text-text-primary hover:bg-white/10 rounded-xl h-12"
                             onClick={handleLogout}
-                            disabled={isLoading}
+                            disabled={isLoading || isLoggingOut}
                         >
                             <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center mr-3">
-                                <LogOut className="h-5 w-5 text-red-400" />
+                                {isLoggingOut ? (
+                                    <Loader2 className="h-5 w-5 animate-spin text-red-400" />
+                                ) : (
+                                    <LogOut className="h-5 w-5 text-red-400" />
+                                )}
                             </div>
                             <div className="flex-1 text-left">
-                                <div className="font-medium">Disconnect</div>
-                                <div className="text-xs opacity-60">Logout from station</div>
+                                <div className="font-medium">
+                                    {isLoggingOut ? 'Disconnecting...' : 'Disconnect'}
+                                </div>
+                                <div className="text-xs opacity-60">
+                                    {isLoggingOut ? 'Please wait' : 'Logout from station'}
+                                </div>
                             </div>
                         </Button>
                     </div>
@@ -239,14 +244,22 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                             variant="ghost"
                             className="w-full justify-start text-text-muted hover:text-text-primary hover:bg-white/10 rounded-2xl h-14 transition-all duration-300 hover:shadow-xl"
                             onClick={handleLogout}
-                            disabled={isLoading}
+                            disabled={isLoading || isLoggingOut}
                         >
                             <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mr-4">
-                                <LogOut className="h-6 w-6 text-red-400" />
+                                {isLoggingOut ? (
+                                    <Loader2 className="h-6 w-6 animate-spin text-red-400" />
+                                ) : (
+                                    <LogOut className="h-6 w-6 text-red-400" />
+                                )}
                             </div>
                             <div className="flex-1 text-left">
-                                <div className="font-semibold">Disconnect</div>
-                                <div className="text-sm opacity-60 mt-1">Logout from station</div>
+                                <div className="font-semibold">
+                                    {isLoggingOut ? 'Disconnecting...' : 'Disconnect'}
+                                </div>
+                                <div className="text-sm opacity-60 mt-1">
+                                    {isLoggingOut ? 'Please wait' : 'Logout from station'}
+                                </div>
                             </div>
                         </Button>
                     </div>
