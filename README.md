@@ -53,9 +53,7 @@ GoSwift/
 │   │   └── websocket.go
 │   ├── models/                 # Data models
 │   │   ├── user.go
-│   │   ├── conversation.go
-│   │   ├── message.go
-│   │   └── session.go
+│   │   └── chat.go
 │   ├── handlers/               # Gin HTTP handlers
 │   │   ├── auth.go
 │   │   ├── chat.go
@@ -63,15 +61,16 @@ GoSwift/
 │   │   ├── user.go
 │   │   └── file.go
 │   ├── websocket/              # WebSocket management
-│   │   ├── connection.go
-│   │   ├── hub.go
-│   │   └── message.go
+│   │   ├── handler.go
+│   │   ├── manager.go
+│   │   └── upgrader.go
 │   ├── database/               # Database connection & migrations
 │   │   └── connection.go
 │   ├── repository/             # Data access layer (CRUD operations)
 │   │   ├── user_repository.go
 │   │   ├── conversation_repository.go
-│   │   └── message_repository.go
+│   │   ├── message_repository.go
+│   │   └── participant_repository.go
 │   ├── service/                # Business logic layer
 │   │   ├── auth_service.go
 │   │   ├── chat_service.go
@@ -94,7 +93,8 @@ GoSwift/
 │   │   └── security.go
 │   └── router/                 # Router setup
 │       ├── router.go
-│       └── auth_routes.go
+│       ├── auth_routes.go
+│       └── websocket_routes.go
 ├── pkg/
 │   ├── encryption/             # Encryption utilities
 │   │   ├── aes.go
@@ -147,8 +147,10 @@ GoSwift/
 │   ├── 000001_create_users_table.down.sql
 │   ├── 000002_create_conversations_table.up.sql
 │   ├── 000002_create_conversations_table.down.sql
-│   ├── 000003_create_messages_table.up.sql
-│   └── 000003_create_messages_table.down.sql
+│   ├── 000003_create_conversation_participants_table.up.sql
+│   ├── 000003_create_conversation_participants_table.down.sql
+│   ├── 000004_create_messages_table.up.sql
+│   └── 000004_create_messages_table.down.sql
 ├── docker/                     # Docker configurations
 │   ├── Dockerfile
 │   ├── docker-compose.yml
@@ -265,17 +267,17 @@ GoSwift/
 ### Phase 3: Real-time Chat Core (Tuần 3-4)
 **Mục tiêu**: Có thể chat real-time cơ bản
 
-#### 3.1 WebSocket Setup
-- [ ] WebSocket connection management
-- [ ] Connection hub và client management
-- [ ] Basic message handling
-- [ ] Connection authentication
+#### 3.1 WebSocket Setup ✅ **COMPLETED**
+- [x] WebSocket connection management
+- [x] Connection hub và client management
+- [x] Basic message handling
+- [x] Connection authentication
 
-#### 3.2 Chat Database
-- [ ] Conversations table migration
-- [ ] Messages table migration
-- [ ] Conversation participants table
-- [ ] Basic relationships và indexes
+#### 3.2 Chat Database ✅ **COMPLETED**
+- [x] Conversations table migration
+- [x] Messages table migration
+- [x] Conversation participants table
+- [x] Basic relationships và indexes
 
 #### 3.3 Chat Logic
 - [ ] Send/receive messages
@@ -476,6 +478,9 @@ npm run dev
 
 ### Health Check
 - `GET /health` - Server health status
+
+### WebSocket
+- `GET /ws` - WebSocket connection endpoint
 
 ### Swagger Documentation
 - `GET /swagger/*` - API documentation
