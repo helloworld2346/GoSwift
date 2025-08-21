@@ -99,6 +99,7 @@ export function LoginForm() {
                             <FormControl>
                                 <div className="relative">
                                     <Input
+                                        type={showPassword ? "text" : "password"}
                                         placeholder="Enter your password"
                                         className="bg-transparent border-card-border text-text-primary placeholder:text-text-muted focus:border-nebula-purple focus:ring-nebula-purple pr-10 h-12 text-base"
                                         autoComplete="current-password"

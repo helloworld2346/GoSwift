@@ -137,3 +137,40 @@ input::-webkit-contacts-auto-fill-button {
     border: none !important;
     background: transparent !important;
 }
+
+/* Hide browser's default password toggle icon */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+}
+
+/* For Webkit browsers (Chrome, Safari, Edge) */
+input[type="password"]::-webkit-outer-spin-button,
+input[type="password"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* For Firefox */
+input[type="password"] {
+    -moz-appearance: textfield;
+}
+
+/* Form validation messages - Space theme */
+.form-message {
+    color: #ff6b6b;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.form-message::before {
+    content: '⚠️';
+    margin-right: 0.5rem;
+    font-size: 0.75rem;
+}
