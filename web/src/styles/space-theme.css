@@ -1,0 +1,270 @@
+/* Space Theme Variables */
+:root {
+    /* Space Background Colors */
+    --space-bg-primary: #0a0a1a;
+    --space-bg-secondary: #1a0a2e;
+    --space-bg-tertiary: #2d1b69;
+
+    /* Nebula Colors */
+    --nebula-purple: #8A2BE2;
+    --nebula-magenta: #FF00FF;
+    --nebula-pink: #FF69B4;
+    --nebula-violet: #9370DB;
+
+    /* Star Colors */
+    --star-white: #ffffff;
+    --star-blue: #4FC3F7;
+    --star-purple: #E1BEE7;
+
+    /* Glow Effects */
+    --glow-purple: rgba(138, 43, 226, 0.5);
+    --glow-magenta: rgba(255, 0, 255, 0.5);
+    --glow-blue: rgba(79, 195, 247, 0.5);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #8A2BE2 0%, #FF00FF 100%);
+    --gradient-secondary: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+    --gradient-accent: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+
+    /* Card Backgrounds */
+    --card-space: rgba(30, 0, 60, 0.7);
+    --card-space-hover: rgba(40, 0, 80, 0.8);
+    --card-border: rgba(150, 0, 255, 0.3);
+
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: #F0F0F0;
+    --text-muted: #B0B0B0;
+    --text-accent: #E1BEE7;
+}
+
+/* Space Theme Classes */
+.space-bg {
+    background: var(--space-bg-primary);
+    background-image:
+        radial-gradient(circle at 20% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(79, 195, 247, 0.05) 0%, transparent 50%);
+}
+
+/* Text Color Utilities */
+.text-text-primary {
+    color: var(--text-primary);
+}
+
+.text-text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-text-muted {
+    color: var(--text-muted);
+}
+
+.text-text-accent {
+    color: var(--text-accent);
+}
+
+/* Nebula Color Utilities */
+.text-nebula-purple {
+    color: var(--nebula-purple);
+}
+
+.text-nebula-magenta {
+    color: var(--nebula-magenta);
+}
+
+.text-nebula-pink {
+    color: var(--nebula-pink);
+}
+
+.text-nebula-violet {
+    color: var(--nebula-violet);
+}
+
+/* Border Color Utilities */
+.border-card-border {
+    border-color: var(--card-border);
+}
+
+/* Focus states for inputs */
+.focus\:border-nebula-purple:focus {
+    border-color: var(--nebula-purple);
+}
+
+.focus\:ring-nebula-purple:focus {
+    --tw-ring-color: var(--nebula-purple);
+}
+
+/* Space Card Styles */
+.space-card {
+    background: var(--card-space);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(138, 43, 226, 0.1);
+    transition: all 0.3s ease;
+}
+
+.space-card:hover {
+    background: var(--card-space-hover);
+    box-shadow: 0 12px 40px rgba(138, 43, 226, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Button Styles */
+.gradient-button {
+    background: var(--gradient-primary);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 4px 15px var(--glow-purple),
+        0 0 0 1px rgba(138, 43, 226, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.gradient-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.gradient-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow:
+        0 8px 25px var(--glow-purple),
+        0 0 0 1px rgba(138, 43, 226, 0.4),
+        0 0 30px rgba(138, 43, 226, 0.3);
+    background: linear-gradient(135deg, #9d4edd 0%, #ff6b9d 50%, #c44569 100%);
+}
+
+.gradient-button:hover::before {
+    left: 100%;
+}
+
+.gradient-button:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+/* Space-themed outline button */
+.space-outline-button {
+    background: transparent;
+    border: 2px solid var(--card-border);
+    color: var(--text-secondary);
+    font-weight: 500;
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 0 1px rgba(150, 0, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.space-outline-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.space-outline-button:hover {
+    border-color: var(--nebula-purple);
+    color: var(--text-primary);
+    box-shadow:
+        0 0 20px rgba(138, 43, 226, 0.3),
+        0 0 0 1px rgba(138, 43, 226, 0.3);
+    transform: translateY(-2px);
+}
+
+.space-outline-button:hover::before {
+    opacity: 0.1;
+}
+
+.space-outline-button:active {
+    transform: translateY(0);
+}
+
+/* Glow Effects */
+.glow-effect {
+    box-shadow: 0 0 20px var(--glow-purple);
+}
+
+.glow-text {
+    text-shadow: 0 0 10px var(--glow-purple);
+}
+
+/* Enhanced text effects */
+.text-glow-purple {
+    text-shadow: 0 0 10px var(--glow-purple), 0 0 20px var(--glow-purple);
+}
+
+.text-glow-magenta {
+    text-shadow: 0 0 10px var(--glow-magenta), 0 0 20px var(--glow-magenta);
+}
+
+.text-glow-blue {
+    text-shadow: 0 0 10px var(--glow-blue), 0 0 20px var(--glow-blue);
+}
+
+/* Subtle text glow for better readability */
+.text-glow-subtle {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+/* Button spacing improvements */
+.space-y-8>*+* {
+    margin-top: 2rem;
+}
+
+/* Ensure buttons don't stick together */
+.gradient-button,
+.space-outline-button {
+    margin-bottom: 0.5rem;
+}
+
+/* Success color for space theme - Cyan/Blue instead of green */
+.text-green-400 {
+    color: #06b6d4;
+}
+
+.border-green-400 {
+    border-color: #06b6d4;
+}
+
+.bg-green-400 {
+    background-color: #06b6d4;
+}
+
+/* Error color for space theme - Red */
+.text-red-400 {
+    color: #f87171;
+}
+
+.border-red-400 {
+    border-color: #f87171;
+}
+
+.bg-red-400 {
+    background-color: #f87171;
+}

@@ -1,34 +1,26 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, Loader2, Check } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 import { registerSchema, type RegisterFormData } from '@/lib/validations';
 import { useAuthStore } from '@/stores/auth';
-import { useToast } from '@/hooks/use-toast'; // Thay thế import toast
-
-interface PasswordRequirement {
-    id: string;
-    text: string;
-    regex: RegExp;
-    met: boolean;
-    hasError: boolean;
-}
+import { useToast } from '@/hooks/use-toast';
+import { usePasswordRequirements } from '@/hooks/usePasswordRequirements';
+import { PasswordRequirements } from '@/components/auth/password-requirements';
 
 export function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const { register, isLoading, error } = useAuthStore();
-    const { showSuccess, showError } = useToast(); // Sử dụng custom toast
+    const { showSuccess, showError } = useToast();
     const form = useForm<RegisterFormData>({
         resolver: zodResolver(registerSchema),
         defaultValues: {
@@ -38,31 +30,8 @@ export function RegisterForm() {
         },
     });
 
-    const password = form.watch('password');
-
-    // Password requirements with real-time validation and form errors
-    const passwordRequirements = useMemo((): PasswordRequirement[] => {
-        const passwordErrors = form.formState.errors.password?.message;
-        const hasPasswordError = !!passwordErrors;
-
-        if (!password) {
-            return [
-                { id: 'length', text: 'At least 6 characters long', regex: /.{6,}/, met: false, hasError: hasPasswordError },
-                { id: 'uppercase', text: 'One uppercase letter (A-Z)', regex: /[A-Z]/, met: false, hasError: hasPasswordError },
-                { id: 'lowercase', text: 'One lowercase letter (a-z)', regex: /[a-z]/, met: false, hasError: hasPasswordError },
-                { id: 'number', text: 'One number (0-9)', regex: /[0-9]/, met: false, hasError: hasPasswordError },
-                { id: 'special', text: 'One special character (!@#$%^&*)', regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, met: false, hasError: hasPasswordError },
-            ];
-        }
-
-        return [
-            { id: 'length', text: 'At least 6 characters long', regex: /.{6,}/, met: password.length >= 6, hasError: hasPasswordError && password.length < 6 },
-            { id: 'uppercase', text: 'One uppercase letter (A-Z)', regex: /[A-Z]/, met: /[A-Z]/.test(password), hasError: hasPasswordError && !/[A-Z]/.test(password) },
-            { id: 'lowercase', text: 'One lowercase letter (a-z)', regex: /[a-z]/, met: /[a-z]/.test(password), hasError: hasPasswordError && !/[a-z]/.test(password) },
-            { id: 'number', text: 'One number (0-9)', regex: /[0-9]/, met: /[0-9]/.test(password), hasError: hasPasswordError && !/[0-9]/.test(password) },
-            { id: 'special', text: 'One special character (!@#$%^&*)', regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, met: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password), hasError: hasPasswordError && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) },
-        ];
-    }, [password, form.formState.errors.password?.message]);
+    // Use custom hook for password requirements
+    const { passwordRequirements } = usePasswordRequirements({ form });
 
     const onSubmit = async (data: RegisterFormData) => {
         const result = await register(data.email, data.password, data.display_name);
@@ -142,7 +111,6 @@ export function RegisterForm() {
                             <FormControl>
                                 <div className="relative">
                                     <Input
-                                        type={showPassword ? 'text' : 'password'}
                                         placeholder="Enter your password"
                                         className="bg-transparent border-card-border text-text-primary placeholder:text-text-muted focus:border-nebula-purple focus:ring-nebula-purple pr-10 h-12 text-base"
                                         autoComplete="new-password"
@@ -165,37 +133,11 @@ export function RegisterForm() {
                                     </Button>
                                 </div>
                             </FormControl>
-                            {/* Password error is now shown in requirements list instead of separate message */}
-                            <div className="text-xs text-text-muted mt-2 p-3 bg-transparent border border-card-border rounded-lg backdrop-filter blur(10px)">
-                                <div className="font-medium mb-2">Password Requirements:</div>
-                                <ul className="space-y-2 text-xs">
-                                    {passwordRequirements.map((requirement) => (
-                                        <li key={requirement.id} className="flex items-center space-x-2">
-                                            <div className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${requirement.met
-                                                ? 'border-green-400 bg-green-400'
-                                                : requirement.hasError
-                                                    ? 'border-red-400 bg-red-400'
-                                                    : 'border-text-muted'
-                                                }`}>
-                                                {requirement.met && (
-                                                    <Check className="w-2.5 h-2.5 text-white password-requirement-check" />
-                                                )}
-                                                {requirement.hasError && !requirement.met && (
-                                                    <span className="w-2.5 h-2.5 text-white text-xs font-bold flex items-center justify-center leading-none">!</span>
-                                                )}
-                                            </div>
-                                            <span className={`transition-colors duration-300 ${requirement.met
-                                                ? 'text-green-400'
-                                                : requirement.hasError
-                                                    ? 'text-red-400'
-                                                    : 'text-text-muted'
-                                                }`}>
-                                                {requirement.text}
-                                            </span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                            {/* Password requirements component */}
+                            <PasswordRequirements
+                                requirements={passwordRequirements}
+                                className="text-xs text-text-muted mt-2 p-3 bg-transparent border border-card-border rounded-lg backdrop-filter blur(10px)"
+                            />
                         </FormItem>
                     )}
                 />

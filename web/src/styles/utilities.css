@@ -1,0 +1,26 @@
+/* Utility Classes and Base Styles */
+
+/* Smooth scrolling for better transitions */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Optimize animations for better performance */
+* {
+    will-change: auto;
+}
+
+.animate-optimized {
+    will-change: transform, opacity;
+}
+
+/* Base layer styles */
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
