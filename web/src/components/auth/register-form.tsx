@@ -21,6 +21,7 @@ interface PasswordRequirement {
     text: string;
     regex: RegExp;
     met: boolean;
+    hasError: boolean;
 }
 
 export function RegisterForm() {
@@ -39,26 +40,29 @@ export function RegisterForm() {
 
     const password = form.watch('password');
 
-    // Password requirements with real-time validation
+    // Password requirements with real-time validation and form errors
     const passwordRequirements = useMemo((): PasswordRequirement[] => {
+        const passwordErrors = form.formState.errors.password?.message;
+        const hasPasswordError = !!passwordErrors;
+
         if (!password) {
             return [
-                { id: 'length', text: 'At least 6 characters long', regex: /.{6,}/, met: false },
-                { id: 'uppercase', text: 'One uppercase letter (A-Z)', regex: /[A-Z]/, met: false },
-                { id: 'lowercase', text: 'One lowercase letter (a-z)', regex: /[a-z]/, met: false },
-                { id: 'number', text: 'One number (0-9)', regex: /[0-9]/, met: false },
-                { id: 'special', text: 'One special character (!@#$%^&*)', regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, met: false },
+                { id: 'length', text: 'At least 6 characters long', regex: /.{6,}/, met: false, hasError: hasPasswordError },
+                { id: 'uppercase', text: 'One uppercase letter (A-Z)', regex: /[A-Z]/, met: false, hasError: hasPasswordError },
+                { id: 'lowercase', text: 'One lowercase letter (a-z)', regex: /[a-z]/, met: false, hasError: hasPasswordError },
+                { id: 'number', text: 'One number (0-9)', regex: /[0-9]/, met: false, hasError: hasPasswordError },
+                { id: 'special', text: 'One special character (!@#$%^&*)', regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, met: false, hasError: hasPasswordError },
             ];
         }
 
         return [
-            { id: 'length', text: 'At least 6 characters long', regex: /.{6,}/, met: password.length >= 6 },
-            { id: 'uppercase', text: 'One uppercase letter (A-Z)', regex: /[A-Z]/, met: /[A-Z]/.test(password) },
-            { id: 'lowercase', text: 'One lowercase letter (a-z)', regex: /[a-z]/, met: /[a-z]/.test(password) },
-            { id: 'number', text: 'One number (0-9)', regex: /[0-9]/, met: /[0-9]/.test(password) },
-            { id: 'special', text: 'One special character (!@#$%^&*)', regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, met: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) },
+            { id: 'length', text: 'At least 6 characters long', regex: /.{6,}/, met: password.length >= 6, hasError: hasPasswordError && password.length < 6 },
+            { id: 'uppercase', text: 'One uppercase letter (A-Z)', regex: /[A-Z]/, met: /[A-Z]/.test(password), hasError: hasPasswordError && !/[A-Z]/.test(password) },
+            { id: 'lowercase', text: 'One lowercase letter (a-z)', regex: /[a-z]/, met: /[a-z]/.test(password), hasError: hasPasswordError && !/[a-z]/.test(password) },
+            { id: 'number', text: 'One number (0-9)', regex: /[0-9]/, met: /[0-9]/.test(password), hasError: hasPasswordError && !/[0-9]/.test(password) },
+            { id: 'special', text: 'One special character (!@#$%^&*)', regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, met: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password), hasError: hasPasswordError && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) },
         ];
-    }, [password]);
+    }, [password, form.formState.errors.password?.message]);
 
     const onSubmit = async (data: RegisterFormData) => {
         const result = await register(data.email, data.password, data.display_name);
@@ -161,7 +165,7 @@ export function RegisterForm() {
                                     </Button>
                                 </div>
                             </FormControl>
-                            <FormMessage className="form-message" />
+                            {/* Password error is now shown in requirements list instead of separate message */}
                             <div className="text-xs text-text-muted mt-2 p-3 bg-transparent border border-card-border rounded-lg backdrop-filter blur(10px)">
                                 <div className="font-medium mb-2">Password Requirements:</div>
                                 <ul className="space-y-2 text-xs">
@@ -169,13 +173,22 @@ export function RegisterForm() {
                                         <li key={requirement.id} className="flex items-center space-x-2">
                                             <div className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${requirement.met
                                                 ? 'border-green-400 bg-green-400'
-                                                : 'border-text-muted'
+                                                : requirement.hasError
+                                                    ? 'border-red-400 bg-red-400'
+                                                    : 'border-text-muted'
                                                 }`}>
                                                 {requirement.met && (
                                                     <Check className="w-2.5 h-2.5 text-white password-requirement-check" />
                                                 )}
+                                                {requirement.hasError && !requirement.met && (
+                                                    <span className="w-2.5 h-2.5 text-white text-xs font-bold flex items-center justify-center leading-none">!</span>
+                                                )}
                                             </div>
-                                            <span className={`transition-colors duration-300 ${requirement.met ? 'text-green-400' : 'text-text-muted'
+                                            <span className={`transition-colors duration-300 ${requirement.met
+                                                ? 'text-green-400'
+                                                : requirement.hasError
+                                                    ? 'text-red-400'
+                                                    : 'text-text-muted'
                                                 }`}>
                                                 {requirement.text}
                                             </span>

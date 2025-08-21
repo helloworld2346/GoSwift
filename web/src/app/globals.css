@@ -545,6 +545,19 @@ input:focus::-webkit-contacts-auto-fill-button {
   background-color: #06b6d4;
 }
 
+/* Error color for space theme - Red */
+.text-red-400 {
+  color: #f87171;
+}
+
+.border-red-400 {
+  border-color: #f87171;
+}
+
+.bg-red-400 {
+  background-color: #f87171;
+}
+
 .space-card {
   background: var(--card-space);
   border: 1px solid var(--card-border);
