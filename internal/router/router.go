@@ -9,6 +9,7 @@ import (
 	"goswift/internal/middleware"
 	"goswift/internal/repository"
 	"goswift/internal/service"
+	"goswift/internal/websocket"
 	"goswift/pkg/jwt"
 	"goswift/pkg/utils"
 
@@ -25,11 +26,11 @@ func SetupRouter(config *utils.Config, db *database.DB, redisClient *cache.Redis
 
 	r := gin.Default()
 
-	// Add security headers (thêm dòng này)
+	// Add security headers
 	r.Use(middleware.SecurityHeaders())
 
 	// Add rate limiting
-	rateLimiter := middleware.NewRateLimiter(100, time.Minute) // 100 requests/minute
+	rateLimiter := middleware.NewRateLimiter(100, time.Minute)
 	r.Use(rateLimiter.RateLimitMiddleware())
 
 	// Add CORS middleware
@@ -44,12 +45,20 @@ func SetupRouter(config *utils.Config, db *database.DB, redisClient *cache.Redis
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtManager)
 
+	// Initialize WebSocket manager
+	wsManager := websocket.NewManager()
+	go wsManager.Start() // Start WebSocket manager in goroutine
+
 	// Initialize handlers
 	healthHandler := handlers.NewHealthHandler(db, redisClient, config)
 	authHandler := handlers.NewAuthHandler(authService)
+	wsHandler := websocket.NewHandler(wsManager)
 
 	// Health check endpoint (root level)
 	r.GET("/health", healthHandler.HealthCheck)
+
+	// Setup WebSocket routes
+	SetupWebSocketRoutes(r, wsHandler)
 
 	// API v1 routes
 	apiV1 := r.Group("/api/v1")

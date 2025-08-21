@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebSocket Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #messages {
+            height: 300px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        #messageInput {
+            width: 70%;
+            padding: 5px;
+        }
+
+        button {
+            padding: 5px 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>WebSocket Test</h1>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8080/ws');
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+
+        ws.onopen = function () {
+            console.log('Connected to WebSocket');
+            addMessage('System', 'Connected to WebSocket');
+
+            // Send authentication
+            ws.send(JSON.stringify({
+                type: 'auth',
+                user_id: 'test-user-123',
+                username: 'TestUser'
+            }));
+        };
+
+        ws.onmessage = function (event) {
+            const message = JSON.parse(event.data);
+            addMessage(message.username || 'System', message.content);
+        };
+
+        ws.onclose = function () {
+            console.log('Disconnected from WebSocket');
+            addMessage('System', 'Disconnected from WebSocket');
+        };
+
+        function addMessage(username, content) {
+            const messageElement = document.createElement('div');
+            messageElement.innerHTML = `<strong>${username}:</strong> ${content}`;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function sendMessage() {
+            const content = messageInput.value;
+            if (content) {
+                ws.send(JSON.stringify({
+                    type: 'message',
+                    content: content
+                }));
+                messageInput.value = '';
+            }
+        }
+
+        // Send message on Enter key
+        messageInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+
+</html>
