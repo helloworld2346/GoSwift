@@ -47,13 +47,18 @@ export const useAuthStore = create<AuthState>()(
             clearError: () => set({ error: null }),
 
             initialize: async () => {
-                const token = localStorage.getItem('token');
+                const { token } = get();
                 if (token) {
                     try {
                         await get().getProfile();
                     } catch (error) {
                         // Token is invalid, clear it
                         localStorage.removeItem('token');
+                        set({
+                            user: null,
+                            token: null,
+                            isAuthenticated: false,
+                        });
                     }
                 }
                 set({ isInitialized: true });
@@ -64,8 +69,6 @@ export const useAuthStore = create<AuthState>()(
                     set({ isLoading: true, error: null });
 
                     const response: AuthResponse = await apiClient.login({ email, password });
-
-                    localStorage.setItem('token', response.token);
 
                     set({
                         user: response.user,
@@ -118,9 +121,6 @@ export const useAuthStore = create<AuthState>()(
                 } catch (error) {
                     console.error('Logout error:', error);
                 } finally {
-                    // Clear token from localStorage
-                    localStorage.removeItem('token');
-
                     set({
                         user: null,
                         token: null,
@@ -151,7 +151,6 @@ export const useAuthStore = create<AuthState>()(
 
                     // If profile fetch fails, user might be logged out
                     if (error instanceof Error && error.message.includes('401')) {
-                        localStorage.removeItem('token');
                         set({
                             user: null,
                             token: null,

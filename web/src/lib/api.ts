@@ -59,7 +59,17 @@ class ApiClient {
 
         // Add auth token if available
         if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('token');
+            // Try to get token from Zustand store first, then localStorage as fallback
+            let token = null;
+            try {
+                // Import here to avoid SSR issues
+                const { useAuthStore } = require('@/stores/auth');
+                token = useAuthStore.getState().token;
+            } catch (error) {
+                // Fallback to localStorage
+                token = localStorage.getItem('token');
+            }
+
             if (token) {
                 config.headers = {
                     ...config.headers,

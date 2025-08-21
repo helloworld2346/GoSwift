@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthInitializer } from "@/components/auth/auth-initializer";
+import { AuthGuard } from "@/components/auth/auth-guard";
 import { ToastProvider } from "@/hooks/use-toast"; // Import ToastProvider
 
 const inter = Inter({ subsets: ["latin"] });
@@ -21,7 +22,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <ToastProvider> {/* Wrap toàn bộ app với ToastProvider */}
           <AuthInitializer />
-          {children}
+          <AuthGuard>
+            {children}
+          </AuthGuard>
         </ToastProvider>
       </body>
     </html>
