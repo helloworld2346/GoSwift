@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 
 interface AuthGuardProps {
     children: React.ReactNode;
@@ -12,21 +13,27 @@ export function AuthGuard({ children }: AuthGuardProps) {
     const { isAuthenticated, isInitialized } = useAuthStore();
     const router = useRouter();
     const pathname = usePathname();
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     useEffect(() => {
         if (!isInitialized) return;
 
         // If user is authenticated and on auth pages, redirect to dashboard
         if (isAuthenticated && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
+            setIsRedirecting(true);
             router.replace('/dashboard');
             return;
         }
 
-        // If user is not authenticated and on protected pages, redirect to login
+        // If user is not authenticated and on protected pages, redirect to homepage
         if (!isAuthenticated && pathname.startsWith('/dashboard')) {
-            router.replace('/login');
+            setIsRedirecting(true);
+            router.replace('/');
             return;
         }
+
+        // Reset redirecting state when no redirect is needed
+        setIsRedirecting(false);
     }, [isAuthenticated, isInitialized, pathname, router]);
 
     // Handle browser back/forward buttons
@@ -34,9 +41,11 @@ export function AuthGuard({ children }: AuthGuardProps) {
         const handlePopState = () => {
             if (isInitialized) {
                 if (isAuthenticated && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
+                    setIsRedirecting(true);
                     router.replace('/dashboard');
                 } else if (!isAuthenticated && pathname.startsWith('/dashboard')) {
-                    router.replace('/login');
+                    setIsRedirecting(true);
+                    router.replace('/');
                 }
             }
         };
@@ -45,14 +54,17 @@ export function AuthGuard({ children }: AuthGuardProps) {
         return () => window.removeEventListener('popstate', handlePopState);
     }, [isAuthenticated, isInitialized, pathname, router]);
 
-    if (!isInitialized) {
+    // Reset redirecting state when pathname changes (redirect completed)
+    useEffect(() => {
+        setIsRedirecting(false);
+    }, [pathname]);
+
+    if (!isInitialized || isRedirecting) {
         return (
-            <div className="flex min-h-screen items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-nebula-purple mx-auto"></div>
-                    <p className="mt-2 text-text-muted">Loading...</p>
-                </div>
-            </div>
+            <LoadingScreen
+                message={!isInitialized ? "Initializing GoSwift..." : "Redirecting..."}
+                showSpinner={true}
+            />
         );
     }
 

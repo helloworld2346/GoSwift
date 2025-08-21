@@ -8,8 +8,6 @@ import {
     LogOut,
     X,
     Home,
-    Loader2,
-    Rocket,
     Satellite,
     Users,
     Bell,
@@ -28,17 +26,11 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const { user, isLoading } = useAuthStore();
     const { showSuccess, showError } = useToast();
 
     const handleLogout = async () => {
         try {
-            setIsLoggingOut(true);
-
-            // Show loading screen for a bit
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
             // Call logout API first (while token still exists)
             try {
                 await apiClient.logout();
@@ -46,28 +38,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 console.error('Logout API error:', error);
             }
 
-            // Clear localStorage after API call
-            localStorage.removeItem('token');
-
-            // Clear auth state manually
-            useAuthStore.setState({
-                user: null,
-                token: null,
-                isAuthenticated: false,
-                isLoading: false,
-                error: null,
-            });
+            // Clear auth state - AuthGuard will handle redirect
+            useAuthStore.getState().logout();
 
             showSuccess('See you in the cosmos, space explorer!');
-
-            // Add small delay to prevent flash
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            // Use window.location to prevent flash and ensure clean navigation
-            window.location.href = '/';
         } catch (error) {
             showError('Failed to logout');
-            setIsLoggingOut(false);
         }
     };
 
@@ -112,37 +88,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     return (
         <>
-            {/* Logout Loading Overlay */}
-            {isLoggingOut && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-space-bg-primary backdrop-blur-sm">
-                    <div className="space-card p-8 text-center max-w-sm mx-4">
-                        {/* Animated Rocket */}
-                        <div className="mb-6 relative">
-                            <Rocket className="w-16 h-16 text-nebula-purple mx-auto animate-bounce" />
-                            <div className="absolute -top-2 -right-2 w-8 h-8 bg-nebula-magenta rounded-full animate-ping opacity-75"></div>
-                        </div>
-
-                        {/* Loading Spinner */}
-                        <div className="mb-4">
-                            <Loader2 className="w-8 h-8 text-nebula-purple mx-auto animate-spin" />
-                        </div>
-
-                        {/* Loading Text */}
-                        <h3 className="text-xl font-semibold text-text-primary mb-2 gradient-text">
-                            Preparing for Departure...
-                        </h3>
-                        <p className="text-text-muted text-sm">
-                            Safely returning you to the cosmic homepage
-                        </p>
-
-                        {/* Progress Bar */}
-                        <div className="mt-4 w-full bg-card-border rounded-full h-2 overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-nebula-purple to-nebula-magenta rounded-full animate-pulse"></div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Mobile sidebar */}
             <div className={`fixed inset-0 z-50 lg:hidden ${isOpen ? 'block' : 'hidden'}`}>
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
@@ -212,29 +157,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                             variant="ghost"
                             className="w-full justify-start text-text-muted hover:text-text-primary hover:bg-white/10 rounded-xl h-12"
                             onClick={handleLogout}
-                            disabled={isLoading || isLoggingOut}
+                            disabled={isLoading}
                         >
-                            {isLoggingOut ? (
-                                <>
-                                    <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center mr-3">
-                                        <Loader2 className="h-5 w-5 animate-spin text-red-400" />
-                                    </div>
-                                    <div className="flex-1 text-left">
-                                        <div className="font-medium">Disconnecting...</div>
-                                        <div className="text-xs opacity-60">Please wait</div>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center mr-3">
-                                        <LogOut className="h-5 w-5 text-red-400" />
-                                    </div>
-                                    <div className="flex-1 text-left">
-                                        <div className="font-medium">Disconnect</div>
-                                        <div className="text-xs opacity-60">Logout from station</div>
-                                    </div>
-                                </>
-                            )}
+                            <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center mr-3">
+                                <LogOut className="h-5 w-5 text-red-400" />
+                            </div>
+                            <div className="flex-1 text-left">
+                                <div className="font-medium">Disconnect</div>
+                                <div className="text-xs opacity-60">Logout from station</div>
+                            </div>
                         </Button>
                     </div>
                 </div>
@@ -308,29 +239,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                             variant="ghost"
                             className="w-full justify-start text-text-muted hover:text-text-primary hover:bg-white/10 rounded-2xl h-14 transition-all duration-300 hover:shadow-xl"
                             onClick={handleLogout}
-                            disabled={isLoading || isLoggingOut}
+                            disabled={isLoading}
                         >
-                            {isLoggingOut ? (
-                                <>
-                                    <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mr-4">
-                                        <Loader2 className="h-6 w-6 animate-spin text-red-400" />
-                                    </div>
-                                    <div className="flex-1 text-left">
-                                        <div className="font-semibold">Disconnecting...</div>
-                                        <div className="text-sm opacity-60 mt-1">Please wait</div>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mr-4">
-                                        <LogOut className="h-6 w-6 text-red-400" />
-                                    </div>
-                                    <div className="flex-1 text-left">
-                                        <div className="font-semibold">Disconnect</div>
-                                        <div className="text-sm opacity-60 mt-1">Logout from station</div>
-                                    </div>
-                                </>
-                            )}
+                            <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center mr-4">
+                                <LogOut className="h-6 w-6 text-red-400" />
+                            </div>
+                            <div className="flex-1 text-left">
+                                <div className="font-semibold">Disconnect</div>
+                                <div className="text-sm opacity-60 mt-1">Logout from station</div>
+                            </div>
                         </Button>
                     </div>
                 </div>
