@@ -11,6 +11,7 @@ import {
   Bell,
   Loader2,
 } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth";
@@ -19,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 export function Sidebar() {
   const { user, isLoading, isLoggingOut } = useAuthStore();
   const { showSuccess, showError } = useToast();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     if (isLoggingOut) return; // Prevent multiple clicks
@@ -73,6 +75,13 @@ export function Sidebar() {
     },
   ];
 
+  const isActive = (href: string) => {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+    return pathname.startsWith(href);
+  };
+
   return (
     <div className="fixed inset-y-0 left-6 top-6 bottom-6 w-64 xl:w-80 2xl:w-96">
       <div className="h-full flex flex-col space-card rounded-3xl border border-card-border shadow-2xl backdrop-blur-xl relative overflow-hidden">
@@ -118,14 +127,32 @@ export function Sidebar() {
         <nav className="flex-1 px-3 xl:px-4 py-4 xl:py-6 space-y-1 xl:space-y-2 relative z-10 overflow-y-auto">
           {navigation.map((item) => {
             const Icon = item.icon;
+            const active = isActive(item.href);
+
             return (
               <a
                 key={item.name}
                 href={item.href}
-                className="group flex items-center px-2 xl:px-3 py-2 xl:py-3 text-sm font-medium rounded-lg xl:rounded-xl text-text-muted hover:bg-white/10 hover:text-text-primary transition-all duration-300 hover:shadow-lg hover:scale-105"
+                className={`group flex items-center px-2 xl:px-3 py-2 xl:py-3 text-sm font-medium rounded-lg xl:rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 ${
+                  active
+                    ? "bg-white/10 text-text-primary shadow-lg"
+                    : "text-text-muted hover:bg-white/10 hover:text-text-primary"
+                }`}
               >
-                <div className="w-8 h-8 xl:w-10 xl:h-10 bg-white/5 rounded-md xl:rounded-lg flex items-center justify-center mr-2 xl:mr-3 group-hover:bg-white/10 transition-all duration-300 group-hover:scale-110">
-                  <Icon className="h-4 w-4 xl:h-5 xl:w-5 group-hover:text-nebula-purple transition-colors" />
+                <div
+                  className={`w-8 h-8 xl:w-10 xl:h-10 rounded-md xl:rounded-lg flex items-center justify-center mr-2 xl:mr-3 transition-all duration-300 group-hover:scale-110 ${
+                    active
+                      ? "bg-white/10 group-hover:bg-white/15"
+                      : "bg-white/5 group-hover:bg-white/10"
+                  }`}
+                >
+                  <Icon
+                    className={`h-4 w-4 xl:h-5 xl:w-5 transition-colors ${
+                      active
+                        ? "text-nebula-purple"
+                        : "group-hover:text-nebula-purple"
+                    }`}
+                  />
                 </div>
                 <div className="flex-1">
                   <div className="font-medium xl:font-semibold text-xs xl:text-sm">
@@ -135,7 +162,11 @@ export function Sidebar() {
                     {item.description}
                   </div>
                 </div>
-                <div className="w-1 h-1 xl:w-1.5 xl:h-1.5 bg-nebula-purple rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div
+                  className={`w-1 h-1 xl:w-1.5 xl:h-1.5 bg-nebula-purple rounded-full transition-opacity ${
+                    active ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                  }`}
+                ></div>
               </a>
             );
           })}

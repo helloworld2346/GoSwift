@@ -28,23 +28,25 @@ export function ChatSidebar({
   return (
     <div
       className={`border-r border-card-border transition-all duration-300 ${
-        isCollapsed ? "w-20" : "w-80"
+        isCollapsed ? "w-16 xl:w-20 2xl:w-24" : "w-64 xl:w-80 2xl:w-96"
       }`}
     >
       {/* Header */}
-      <div className="p-4 border-b border-card-border">
+      <div className="p-3 xl:p-4 border-b border-card-border">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <h2 className="text-xl font-bold text-text-primary">Messages</h2>
+            <h2 className="text-lg xl:text-xl font-bold text-text-primary">
+              Messages
+            </h2>
           )}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 xl:space-x-2">
             {!isCollapsed && (
               <Button
                 size="sm"
                 variant="ghost"
                 className="text-text-primary hover:bg-white/10"
               >
-                <MessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-3 h-3 xl:w-4 xl:h-4" />
               </Button>
             )}
             <Button
@@ -54,9 +56,9 @@ export function ChatSidebar({
               className="text-text-primary hover:bg-white/10"
             >
               {isCollapsed ? (
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3 h-3 xl:w-4 xl:h-4" />
               ) : (
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3 h-3 xl:w-4 xl:h-4" />
               )}
             </Button>
           </div>
@@ -77,10 +79,10 @@ export function ChatSidebar({
           >
             {isCollapsed ? (
               // Collapsed view - only avatar with tooltip
-              <div className="p-3 flex justify-center">
+              <div className="p-2 xl:p-3 flex justify-center">
                 <div className="relative group">
-                  <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">
+                  <div className="w-8 h-8 xl:w-10 xl:h-10 2xl:w-12 2xl:h-12 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-semibold text-xs xl:text-sm 2xl:text-base">
                       {conversation.name
                         .split(" ")
                         .map((n) => n[0])
@@ -88,11 +90,11 @@ export function ChatSidebar({
                     </span>
                   </div>
                   {conversation.participants[0]?.is_online && (
-                    <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-card-bg"></div>
+                    <div className="absolute -bottom-0.5 -right-0.5 xl:-bottom-1 xl:-right-1 2xl:-bottom-1 2xl:-right-1 w-2 h-2 xl:w-2.5 xl:h-2.5 2xl:w-3 2xl:h-3 bg-green-400 rounded-full border-2 border-card-bg"></div>
                   )}
                   {conversation.last_message &&
                     !conversation.last_message.is_read && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-nebula-purple rounded-full flex items-center justify-center">
+                      <div className="absolute -top-0.5 -right-0.5 xl:-top-1 xl:-right-1 2xl:-top-1 2xl:-right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 2xl:w-4 2xl:h-4 bg-nebula-purple rounded-full flex items-center justify-center">
                         <span className="text-white text-xs font-medium">
                           !
                         </span>
@@ -114,11 +116,11 @@ export function ChatSidebar({
               </div>
             ) : (
               // Expanded view - full information
-              <div className="p-4">
-                <div className="flex items-center space-x-3">
+              <div className="p-3 xl:p-4">
+                <div className="flex items-center space-x-2 xl:space-x-3">
                   <div className="relative">
-                    <div className="w-12 h-12 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold">
+                    <div className="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold text-sm xl:text-base 2xl:text-lg">
                         {conversation.name
                           .split(" ")
                           .map((n) => n[0])
@@ -126,12 +128,12 @@ export function ChatSidebar({
                       </span>
                     </div>
                     {conversation.participants[0]?.is_online && (
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-card-bg"></div>
+                      <div className="absolute -bottom-0.5 -right-0.5 xl:-bottom-1 xl:-right-1 2xl:-bottom-1 2xl:-right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 2xl:w-4 2xl:h-4 bg-green-400 rounded-full border-2 border-card-bg"></div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-text-primary truncate">
+                      <h3 className="font-semibold text-text-primary truncate text-sm xl:text-base 2xl:text-lg">
                         {conversation.name}
                       </h3>
                       {conversation.last_message && (
@@ -141,7 +143,7 @@ export function ChatSidebar({
                       )}
                     </div>
                     {conversation.last_message && (
-                      <p className="text-sm text-text-muted truncate">
+                      <p className="text-xs xl:text-sm 2xl:text-base text-text-muted truncate">
                         {conversation.last_message.content}
                       </p>
                     )}
