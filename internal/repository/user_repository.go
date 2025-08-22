@@ -152,3 +152,109 @@ func (r *UserRepository) CheckEmailExists(email string) (bool, error) {
 
 	return exists, nil
 }
+
+// SearchUsers searches for users by display name or email
+// Excludes the current user from search results
+func (r *UserRepository) SearchUsers(query, currentUserID string) ([]models.User, error) {
+	searchQuery := `
+		SELECT id, email, password_hash, display_name, avatar_url, is_online, last_seen, created_at, updated_at
+		FROM users
+		WHERE (LOWER(display_name) LIKE LOWER($1) OR LOWER(email) LIKE LOWER($1))
+		AND id != $2
+		ORDER BY 
+			CASE WHEN LOWER(display_name) = LOWER($1) THEN 1
+				 WHEN LOWER(display_name) LIKE LOWER($1 || '%') THEN 2
+				 WHEN LOWER(email) = LOWER($1) THEN 3
+				 ELSE 4
+			END,
+			display_name
+		LIMIT 20
+	`
+
+	searchTerm := "%" + query + "%"
+	rows, err := r.db.Query(searchQuery, searchTerm, currentUserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search users: %w", err)
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(
+			&user.ID,
+			&user.Email,
+			&user.PasswordHash,
+			&user.DisplayName,
+			&user.AvatarURL,
+			&user.IsOnline,
+			&user.LastSeen,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan user: %w", err)
+		}
+		users = append(users, user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating users: %w", err)
+	}
+
+	return users, nil
+}
+
+// GetOnlineUsers returns list of online users
+// Excludes the current user from results
+func (r *UserRepository) GetOnlineUsers(currentUserID string) ([]models.User, error) {
+	query := `
+		SELECT id, email, password_hash, display_name, avatar_url, is_online, last_seen, created_at, updated_at
+		FROM users
+		WHERE is_online = true AND id != $1
+		ORDER BY last_seen DESC
+		LIMIT 50
+	`
+
+	rows, err := r.db.Query(query, currentUserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get online users: %w", err)
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(
+			&user.ID,
+			&user.Email,
+			&user.PasswordHash,
+			&user.DisplayName,
+			&user.AvatarURL,
+			&user.IsOnline,
+			&user.LastSeen,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan user: %w", err)
+		}
+		users = append(users, user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating users: %w", err)
+	}
+
+	return users, nil
+}
+
+// GetByID retrieves a user by ID (string version for service layer)
+func (r *UserRepository) GetByID(userID string) (*models.User, error) {
+	id, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID format: %w", err)
+	}
+
+	return r.GetUserByID(id)
+}
