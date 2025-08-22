@@ -6,6 +6,7 @@ import (
 
 	"goswift/internal/models"
 	"goswift/internal/service"
+	"goswift/internal/websocket"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -13,11 +14,13 @@ import (
 
 type ChatHandler struct {
 	chatService *service.ChatService
+	wsHandler   *websocket.Handler
 }
 
-func NewChatHandler(chatService *service.ChatService) *ChatHandler {
+func NewChatHandler(chatService *service.ChatService, wsHandler *websocket.Handler) *ChatHandler {
 	return &ChatHandler{
 		chatService: chatService,
+		wsHandler:   wsHandler,
 	}
 }
 
@@ -196,6 +199,24 @@ func (h *ChatHandler) SendMessage(c *gin.Context) {
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	// Broadcast message to all connected clients
+	if h.wsHandler != nil {
+		wsMessage := &websocket.Message{
+			Type:      "message",
+			Content:   message.Content,
+			UserID:    message.SenderID.String(),
+			Username:  message.SenderName,
+			Timestamp: message.CreatedAt.Unix(), // Use timestamp from database
+			Data: map[string]interface{}{
+				"id":               message.ID.String(),
+				"conversation_id":  message.ConversationID.String(),
+				"content":          message.Content,
+				"message_type":     message.MessageType,
+			},
+		}
+		h.wsHandler.BroadcastMessage(wsMessage)
 	}
 
 	c.JSON(http.StatusCreated, message)

@@ -66,35 +66,18 @@ export default function ChatPage() {
     }
   }, [wsError, setError, clearError]);
 
-  const handleSendMessage = async (content: string) => {
-    if (!selectedConversation || !user || !isConnected) {
-      setError(
-        "Cannot send message: not connected or no conversation selected"
-      );
+  const handleSendMessage = async (message: Message) => {
+    if (!selectedConversation || !user) {
+      setError("Cannot send message: no conversation selected");
       return;
     }
 
     try {
-      // Send message via WebSocket
-      sendMessage(content);
-
-      // Create local message for immediate UI update
-      const message: Message = {
-        id: Date.now().toString(), // Temporary ID
-        conversation_id: selectedConversation.id,
-        content,
-        sender_id: user.id,
-        sender_name: user.display_name,
-        message_type: "text",
-        created_at: new Date().toISOString(),
-        is_read: false,
-      };
-
-      // Add message to store
+      // Add message to store for immediate UI update
       addMessage(message);
     } catch (error) {
-      console.error("Failed to send message:", error);
-      setError("Failed to send message");
+      console.error("Failed to update UI:", error);
+      setError("Failed to update message display");
     }
   };
 
@@ -136,6 +119,7 @@ export default function ChatPage() {
               <MessageInput
                 onSendMessage={handleSendMessage}
                 disabled={!isConnected}
+                conversationId={selectedConversation.id}
               />
             </>
           ) : (

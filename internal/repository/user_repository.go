@@ -258,3 +258,19 @@ func (r *UserRepository) GetByID(userID string) (*models.User, error) {
 
 	return r.GetUserByID(id)
 }
+
+// UpdateOnlineStatus updates user's online status
+func (r *UserRepository) UpdateOnlineStatus(userID uuid.UUID, isOnline bool) error {
+	query := `
+		UPDATE users 
+		SET is_online = $1, last_seen = NOW()
+		WHERE id = $2
+	`
+	
+	_, err := r.db.Exec(query, isOnline, userID)
+	if err != nil {
+		return fmt.Errorf("failed to update user online status: %w", err)
+	}
+	
+	return nil
+}

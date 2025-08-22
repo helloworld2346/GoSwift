@@ -311,3 +311,12 @@ func (s *ChatService) MarkMessageAsRead(messageID, userID uuid.UUID) error {
 
 	return nil
 }
+
+// UpdateUserOnlineStatus updates user's online status
+func (s *ChatService) UpdateUserOnlineStatus(userID uuid.UUID, isOnline bool) error {
+	err := s.userRepo.UpdateOnlineStatus(userID, isOnline)
+	if err != nil {
+		return fmt.Errorf("failed to update user online status: %w", err)
+	}
+	return nil
+}

@@ -18,6 +18,7 @@ interface ChatState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
+  updateParticipantStatus: (userId: string, isOnline: boolean) => void;
 
   // API Actions
   loadConversations: () => Promise<void>;
@@ -40,13 +41,38 @@ export const useChatStore = create<ChatState>((set, get) => ({
   // Basic actions
   setConversations: (conversations) => set({ conversations }),
   setSelectedConversation: (conversation) =>
-    set({ selectedConversation: conversation }),
-  setMessages: (messages) => set({ messages }),
+    set({ selectedConversation: conversation, messages: [] }), // Reset messages when switching conversations
+  setMessages: (messages) => {
+    // Sort messages by created_at timestamp
+    const sortedMessages = [...messages].sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+    set({ messages: sortedMessages });
+  },
   addMessage: (message) => {
     const { messages, conversations, selectedConversation } = get();
 
-    // Add message to messages list
-    set({ messages: [...messages, message] });
+    // Check if message already exists to avoid duplicates
+    const messageExists = messages.some((m) => m.id === message.id);
+    if (messageExists) {
+      console.log("Message already exists, skipping add:", message.id);
+      return;
+    }
+
+    // Add message and sort by timestamp
+    const updatedMessages = [...messages, message].sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+
+    console.log(
+      "Adding new message:",
+      message.content,
+      "Total messages:",
+      updatedMessages.length
+    );
+    set({ messages: updatedMessages });
 
     // Update last message in conversations list
     if (selectedConversation) {
@@ -61,6 +87,42 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
   clearError: () => set({ error: null }),
+  updateParticipantStatus: (userId: string, isOnline: boolean) => {
+    console.log(
+      "updateParticipantStatus called:",
+      userId,
+      "isOnline:",
+      isOnline
+    );
+    const { conversations, selectedConversation } = get();
+
+    // Update conversations
+    const updatedConversations = conversations.map((conv) => ({
+      ...conv,
+      participants: conv.participants.map((p) =>
+        p.id === userId ? { ...p, is_online: isOnline } : p
+      ),
+    }));
+
+    // Update selected conversation
+    let updatedSelectedConversation = selectedConversation;
+    if (selectedConversation) {
+      updatedSelectedConversation = {
+        ...selectedConversation,
+        participants: selectedConversation.participants.map((p) =>
+          p.id === userId ? { ...p, is_online: isOnline } : p
+        ),
+      };
+    }
+
+    console.log("Updated conversations:", updatedConversations);
+    console.log("Updated selected conversation:", updatedSelectedConversation);
+
+    set({
+      conversations: updatedConversations,
+      selectedConversation: updatedSelectedConversation,
+    });
+  },
 
   // API Actions
   loadConversations: async () => {
@@ -83,14 +145,34 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   loadMessages: async (conversationId: string) => {
-    const { setLoading, setError, setMessages } = get();
+    const { setLoading, setError, messages, setMessages } = get();
 
     try {
       setLoading(true);
       setError(null);
 
-      const messages = await chatAPI.getMessages(conversationId);
-      setMessages(messages);
+      const apiMessages = await chatAPI.getMessages(conversationId);
+
+      // Merge API messages with existing WebSocket messages
+      const existingMessageIds = new Set(messages.map((m) => m.id));
+      const newMessages = apiMessages.filter(
+        (m) => !existingMessageIds.has(m.id)
+      );
+
+      if (newMessages.length > 0) {
+        const mergedMessages = [...messages, ...newMessages].sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        setMessages(mergedMessages);
+      } else {
+        // If no new messages, just sort existing ones
+        const sortedMessages = [...messages].sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        setMessages(sortedMessages);
+      }
     } catch (error) {
       console.error("Failed to load messages:", error);
       setError(

@@ -57,9 +57,9 @@ func SetupRouter(config *utils.Config, db *database.DB, redisClient *cache.Redis
 	// Initialize handlers
 	healthHandler := handlers.NewHealthHandler(db, redisClient, config)
 	authHandler := handlers.NewAuthHandler(authService)
-	chatHandler := handlers.NewChatHandler(chatService)
+	wsHandler := websocket.NewHandler(wsManager, chatService)
+	chatHandler := handlers.NewChatHandler(chatService, wsHandler)
 	userHandler := handlers.NewUserHandler(userService)
-	wsHandler := websocket.NewHandler(wsManager)
 
 	// Health check endpoint (root level)
 	r.GET("/health", healthHandler.HealthCheck)

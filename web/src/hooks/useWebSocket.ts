@@ -8,9 +8,12 @@ import type {
 } from "@/types/chat";
 
 interface MessageData {
+  id?: string;
   content?: string;
   conversation_id?: string;
   message_type?: string;
+  user_id?: string;
+  is_online?: boolean;
 }
 
 interface ErrorData {
@@ -21,8 +24,9 @@ interface ErrorData {
 }
 
 export const useWebSocket = (conversationId?: string) => {
-  const { token } = useAuthStore();
-  const { addMessage, setError, clearError } = useChatStore();
+  const { token, user } = useAuthStore();
+  const { addMessage, setError, clearError, updateParticipantStatus } =
+    useChatStore();
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setWsError] = useState<string | null>(null);
@@ -40,6 +44,17 @@ export const useWebSocket = (conversationId?: string) => {
         setIsConnected(true);
         setWsError(null);
         clearError();
+
+        // Send authentication message
+        if (user) {
+          const authMessage = {
+            type: "auth",
+            user_id: user.id,
+            username: user.display_name,
+          };
+          console.log("Sending auth message:", authMessage);
+          ws.current?.send(JSON.stringify(authMessage));
+        }
       };
 
       ws.current.onmessage = (event) => {
@@ -54,7 +69,7 @@ export const useWebSocket = (conversationId?: string) => {
                 if (messageData.content && messageData.conversation_id) {
                   // Create a Message object from the WebSocket data
                   const newMessage: Message = {
-                    id: Date.now().toString(), // Temporary ID
+                    id: messageData.id || `${Date.now()}-${Math.random()}`, // Use backend ID or generate unique
                     conversation_id: messageData.conversation_id,
                     content: messageData.content,
                     sender_id: message.user_id || "",
@@ -62,15 +77,42 @@ export const useWebSocket = (conversationId?: string) => {
                     message_type:
                       (messageData.message_type as "text" | "image" | "file") ||
                       "text",
-                    created_at: new Date(
-                      (message.timestamp || Date.now() / 1000) * 1000
-                    ).toISOString(),
+                    created_at: message.timestamp
+                      ? new Date(message.timestamp * 1000).toISOString() // Use backend timestamp
+                      : new Date().toISOString(), // Fallback to current time
                     is_read: false,
                   };
 
                   // Add message to chat store
                   addMessage(newMessage);
                 }
+              }
+              break;
+            case "user_status":
+              // Handle user status updates (online/offline)
+              if (message.data && typeof message.data === "object") {
+                const statusData = message.data as MessageData;
+                if (
+                  statusData.user_id !== undefined &&
+                  statusData.is_online !== undefined
+                ) {
+                  console.log(
+                    "User status update:",
+                    statusData.user_id,
+                    "is",
+                    statusData.is_online ? "online" : "offline"
+                  );
+                  console.log("Full status message:", message);
+                  // Update participant status in chat store
+                  updateParticipantStatus(
+                    statusData.user_id,
+                    statusData.is_online
+                  );
+                } else {
+                  console.log("Invalid status data:", statusData);
+                }
+              } else {
+                console.log("No data in user_status message:", message);
               }
               break;
             case "error":
