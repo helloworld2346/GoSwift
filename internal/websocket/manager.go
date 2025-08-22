@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Client represents a connected WebSocket client
+// Client represents a WebSocket client
 type Client struct {
 	ID       string          `json:"id"`
 	UserID   string          `json:"user_id"`
@@ -82,6 +82,26 @@ func (m *Manager) Start() {
 // Broadcast sends a message to all connected clients
 func (m *Manager) Broadcast(message *Message) {
 	m.broadcast <- message
+}
+
+// BroadcastToOthers sends a message to all clients except the sender
+func (m *Manager) BroadcastToOthers(senderID string, message *Message) {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+
+	for _, client := range m.clients {
+		// Skip the sender
+		if client.ID == senderID {
+			continue
+		}
+
+		err := client.Conn.WriteJSON(message)
+		if err != nil {
+			log.Printf("Error sending message to client %s: %v", client.ID, err)
+			client.Conn.Close()
+			delete(m.clients, client.ID)
+		}
+	}
 }
 
 // SendToUser sends a message to a specific user

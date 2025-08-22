@@ -117,8 +117,8 @@ func (h *Handler) handleChatMessage(client *Client, message *Message) {
 	message.UserID = client.UserID
 	message.Username = client.Username
 
-	// Broadcast message to all clients
-	h.manager.Broadcast(message)
+	// Broadcast message to all clients EXCEPT the sender to prevent echo
+	h.manager.BroadcastToOthers(client.ID, message)
 	log.Printf("Broadcasting message from %s: %s", client.Username, message.Content)
 }
 

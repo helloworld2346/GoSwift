@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/stores/auth";
 import { useChatStore } from "@/stores/chat";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { MessageSquare } from "lucide-react";
 import {
   ChatSidebar,
@@ -10,7 +11,7 @@ import {
   MessageList,
   MessageInput,
 } from "@/components/chat";
-import type { Conversation, Message } from "@/types/chat";
+import type { Message } from "@/types/chat";
 
 export default function ChatPage() {
   const { user } = useAuthStore();
@@ -18,120 +19,79 @@ export default function ChatPage() {
     conversations,
     selectedConversation,
     messages,
-    setConversations,
+    loading,
+    error,
     setSelectedConversation,
-    setMessages,
     addMessage,
+    setError,
+    clearError,
+    loadConversations,
+    loadMessages,
   } = useChatStore();
+
+  // WebSocket hook for real-time messaging
+  const {
+    isConnected,
+    sendMessage,
+    error: wsError,
+  } = useWebSocket(selectedConversation?.id);
 
   // State for sidebar collapse
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Mock data for development
+  // Load conversations on mount
   useEffect(() => {
-    const mockConversations: Conversation[] = [
-      {
-        id: "1",
-        name: "Alice Johnson",
-        type: "direct",
-        created_by: "2",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        participants: [
-          { id: "2", display_name: "Alice Johnson", is_online: true },
-        ],
-        last_message: {
-          id: "1",
-          conversation_id: "1",
-          content: "Hey, how are you doing?",
-          sender_id: "2",
-          sender_name: "Alice Johnson",
-          message_type: "text",
-          created_at: new Date().toISOString(),
-          is_read: false,
-        },
-      },
-      {
-        id: "2",
-        name: "Bob Smith",
-        type: "direct",
-        created_by: "3",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        participants: [
-          { id: "3", display_name: "Bob Smith", is_online: false },
-        ],
-        last_message: {
-          id: "2",
-          conversation_id: "2",
-          content: "Thanks for the help!",
-          sender_id: "3",
-          sender_name: "Bob Smith",
-          message_type: "text",
-          created_at: new Date().toISOString(),
-          is_read: true,
-        },
-      },
-    ];
+    if (user) {
+      loadConversations();
+    }
+  }, [user, loadConversations]);
 
-    setConversations(mockConversations);
-  }, [setConversations]);
-
-  // Mock messages for selected conversation
+  // Load messages when conversation is selected
   useEffect(() => {
     if (selectedConversation) {
-      const mockMessages: Message[] = [
-        {
-          id: "1",
-          conversation_id: selectedConversation.id,
-          content: "Hey there! 🚀",
-          sender_id: selectedConversation.participants[0].id,
-          sender_name: selectedConversation.participants[0].display_name,
-          message_type: "text",
-          created_at: new Date(Date.now() - 60000).toISOString(),
-          is_read: true,
-        },
-        {
-          id: "2",
-          conversation_id: selectedConversation.id,
-          content: "Hi! How are you doing?",
-          sender_id: user?.id || "",
-          sender_name: user?.display_name || "",
-          message_type: "text",
-          created_at: new Date(Date.now() - 30000).toISOString(),
-          is_read: true,
-        },
-        {
-          id: "3",
-          conversation_id: selectedConversation.id,
-          content: "I'm doing great! Just working on some new features.",
-          sender_id: selectedConversation.participants[0].id,
-          sender_name: selectedConversation.participants[0].display_name,
-          message_type: "text",
-          created_at: new Date().toISOString(),
-          is_read: false,
-        },
-      ];
-      setMessages(mockMessages);
+      loadMessages(selectedConversation.id);
     }
-  }, [selectedConversation, user, setMessages]);
+  }, [selectedConversation, loadMessages]);
 
-  const handleSendMessage = (content: string) => {
-    if (!selectedConversation || !user) return;
+  // Handle WebSocket errors
+  useEffect(() => {
+    if (wsError) {
+      setError(wsError);
+    } else {
+      clearError();
+    }
+  }, [wsError, setError, clearError]);
 
-    const message: Message = {
-      id: Date.now().toString(),
-      conversation_id: selectedConversation.id,
-      content,
-      sender_id: user.id,
-      sender_name: user.display_name,
-      message_type: "text",
-      created_at: new Date().toISOString(),
-      is_read: false,
-    };
+  const handleSendMessage = async (content: string) => {
+    if (!selectedConversation || !user || !isConnected) {
+      setError(
+        "Cannot send message: not connected or no conversation selected"
+      );
+      return;
+    }
 
-    addMessage(message);
-    console.log("Sending message:", message);
+    try {
+      // Send message via WebSocket
+      sendMessage(content);
+
+      // Create local message for immediate UI update
+      const message: Message = {
+        id: Date.now().toString(), // Temporary ID
+        conversation_id: selectedConversation.id,
+        content,
+        sender_id: user.id,
+        sender_name: user.display_name,
+        message_type: "text",
+        created_at: new Date().toISOString(),
+        is_read: false,
+      };
+
+      // Add message to store
+      addMessage(message);
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      setError("Failed to send message");
+    }
   };
 
   const toggleSidebar = () => {
@@ -148,15 +108,22 @@ export default function ChatPage() {
           onSelectConversation={setSelectedConversation}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={toggleSidebar}
+          loading={loading}
         />
 
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col bg-white/5">
           {selectedConversation ? (
             <>
-              <ChatHeader conversation={selectedConversation} />
+              <ChatHeader
+                conversation={selectedConversation}
+                isConnected={isConnected}
+              />
               <MessageList messages={messages} currentUserId={user?.id || ""} />
-              <MessageInput onSendMessage={handleSendMessage} />
+              <MessageInput
+                onSendMessage={handleSendMessage}
+                disabled={!isConnected}
+              />
             </>
           ) : (
             /* Empty State */
@@ -169,6 +136,18 @@ export default function ChatPage() {
                 <p className="text-white/60">
                   Choose a conversation from the sidebar to start chatting
                 </p>
+                {!isConnected && (
+                  <div className="mt-4 p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+                    <p className="text-yellow-300 text-sm">
+                      Connecting to chat server...
+                    </p>
+                  </div>
+                )}
+                {error && (
+                  <div className="mt-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
+                    <p className="text-red-300 text-sm">{error}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -1,11 +1,13 @@
 import { create } from "zustand";
-import type { Message, Conversation } from "@/types/chat";
+import { chatAPI } from "@/lib/api";
+import type { Conversation, Message } from "@/types/chat";
 
 interface ChatState {
+  // State
   conversations: Conversation[];
   selectedConversation: Conversation | null;
   messages: Message[];
-  isLoading: boolean;
+  loading: boolean;
   error: string | null;
 
   // Actions
@@ -13,48 +15,140 @@ interface ChatState {
   setSelectedConversation: (conversation: Conversation | null) => void;
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
-  updateLastMessage: (conversationId: string, message: Message) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
+
+  // API Actions
+  loadConversations: () => Promise<void>;
+  loadMessages: (conversationId: string) => Promise<void>;
+  createConversation: (
+    userIds: string[],
+    name: string
+  ) => Promise<Conversation>;
+  sendMessage: (conversationId: string, content: string) => Promise<Message>;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
+  // Initial state
   conversations: [],
   selectedConversation: null,
   messages: [],
-  isLoading: false,
+  loading: false,
   error: null,
 
+  // Basic actions
   setConversations: (conversations) => set({ conversations }),
-
   setSelectedConversation: (conversation) =>
     set({ selectedConversation: conversation }),
-
   setMessages: (messages) => set({ messages }),
-
   addMessage: (message) => {
-    set((state) => ({
-      messages: [...state.messages, message],
-    }));
+    const { messages, conversations, selectedConversation } = get();
 
-    // Update last message in conversation
-    get().updateLastMessage(message.conversation_id, message);
-  },
+    // Add message to messages list
+    set({ messages: [...messages, message] });
 
-  updateLastMessage: (conversationId, message) => {
-    set((state) => ({
-      conversations: state.conversations.map((conv) =>
-        conv.id === conversationId
-          ? { ...conv, last_message: message, updated_at: message.created_at }
+    // Update last message in conversations list
+    if (selectedConversation) {
+      const updatedConversations = conversations.map((conv) =>
+        conv.id === selectedConversation.id
+          ? { ...conv, last_message: message }
           : conv
-      ),
-    }));
+      );
+      set({ conversations: updatedConversations });
+    }
+  },
+  setLoading: (loading) => set({ loading }),
+  setError: (error) => set({ error }),
+  clearError: () => set({ error: null }),
+
+  // API Actions
+  loadConversations: async () => {
+    const { setLoading, setError, setConversations } = get();
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const conversations = await chatAPI.getConversations();
+      setConversations(conversations);
+    } catch (error) {
+      console.error("Failed to load conversations:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to load conversations"
+      );
+    } finally {
+      setLoading(false);
+    }
   },
 
-  setLoading: (loading) => set({ isLoading: loading }),
+  loadMessages: async (conversationId: string) => {
+    const { setLoading, setError, setMessages } = get();
 
-  setError: (error) => set({ error }),
+    try {
+      setLoading(true);
+      setError(null);
 
-  clearError: () => set({ error: null }),
+      const messages = await chatAPI.getMessages(conversationId);
+      setMessages(messages);
+    } catch (error) {
+      console.error("Failed to load messages:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to load messages"
+      );
+    } finally {
+      setLoading(false);
+    }
+  },
+
+  createConversation: async (userIds: string[], name: string) => {
+    const { setLoading, setError, conversations, setConversations } = get();
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const newConversation = await chatAPI.createConversation({
+        name,
+        type: userIds.length === 1 ? "direct" : "group",
+        user_ids: userIds,
+      });
+
+      // Add new conversation to the list
+      setConversations([newConversation, ...conversations]);
+
+      return newConversation;
+    } catch (error) {
+      console.error("Failed to create conversation:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to create conversation"
+      );
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  },
+
+  sendMessage: async (conversationId: string, content: string) => {
+    const { setError } = get();
+
+    try {
+      const message = await chatAPI.sendMessage(conversationId, {
+        conversation_id: conversationId,
+        content,
+        message_type: "text",
+      });
+
+      // Add message to store
+      get().addMessage(message);
+
+      return message;
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to send message"
+      );
+      throw error;
+    }
+  },
 }));

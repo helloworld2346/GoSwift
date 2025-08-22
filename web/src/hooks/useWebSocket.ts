@@ -1,13 +1,31 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuthStore } from "@/stores/auth";
-import type { WebSocketMessage, Message } from "@/types/chat";
+import { useChatStore } from "@/stores/chat";
+import type {
+  WebSocketMessage,
+  Message,
+  WebSocketMessageData,
+} from "@/types/chat";
+
+interface MessageData {
+  content?: string;
+  conversation_id?: string;
+  message_type?: string;
+}
+
+interface ErrorData {
+  error?: {
+    message: string;
+    code?: string;
+  };
+}
 
 export const useWebSocket = (conversationId?: string) => {
   const { token } = useAuthStore();
+  const { addMessage, setError, clearError } = useChatStore();
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setWsError] = useState<string | null>(null);
 
   const connect = useCallback(() => {
     if (!token) return;
@@ -20,7 +38,8 @@ export const useWebSocket = (conversationId?: string) => {
       ws.current.onopen = () => {
         console.log("WebSocket connected");
         setIsConnected(true);
-        setError(null);
+        setWsError(null);
+        clearError();
       };
 
       ws.current.onmessage = (event) => {
@@ -29,41 +48,66 @@ export const useWebSocket = (conversationId?: string) => {
 
           switch (message.type) {
             case "message":
-              if (
-                message.data.message &&
-                message.data.message.conversation_id === conversationId
-              ) {
-                setMessages((prev) => [...prev, message.data.message!]);
+              // Handle the backend message format
+              if (message.data && typeof message.data === "object") {
+                const messageData = message.data as MessageData;
+                if (messageData.content && messageData.conversation_id) {
+                  // Create a Message object from the WebSocket data
+                  const newMessage: Message = {
+                    id: Date.now().toString(), // Temporary ID
+                    conversation_id: messageData.conversation_id,
+                    content: messageData.content,
+                    sender_id: message.user_id || "",
+                    sender_name: message.username || "",
+                    message_type:
+                      (messageData.message_type as "text" | "image" | "file") ||
+                      "text",
+                    created_at: new Date(
+                      (message.timestamp || Date.now() / 1000) * 1000
+                    ).toISOString(),
+                    is_read: false,
+                  };
+
+                  // Add message to chat store
+                  addMessage(newMessage);
+                }
               }
               break;
             case "error":
-              if (message.data.error) {
-                setError(message.data.error.message);
+              if (message.data && typeof message.data === "object") {
+                const errorData = message.data as ErrorData;
+                setWsError(errorData.error?.message || "WebSocket error");
+                setError(errorData.error?.message || "WebSocket error");
               }
+              break;
+            case "auth_success":
+              console.log("WebSocket authentication successful");
               break;
             default:
               console.log("Received message:", message);
           }
         } catch (err) {
           console.error("Error parsing WebSocket message:", err);
+          setWsError("Failed to parse message");
         }
       };
 
       ws.current.onclose = () => {
         console.log("WebSocket disconnected");
         setIsConnected(false);
+        setWsError("Connection lost");
       };
 
       ws.current.onerror = (error) => {
         console.error("WebSocket error:", error);
-        setError("WebSocket connection failed");
+        setWsError("WebSocket connection failed");
         setIsConnected(false);
       };
     } catch (err) {
       console.error("Error connecting to WebSocket:", err);
-      setError("Failed to connect to WebSocket");
+      setWsError("Failed to connect to WebSocket");
     }
-  }, [token, conversationId]);
+  }, [token, addMessage, setError, clearError]);
 
   const disconnect = useCallback(() => {
     if (ws.current) {
@@ -93,16 +137,18 @@ export const useWebSocket = (conversationId?: string) => {
     [isConnected, conversationId]
   );
 
+  // Auto-reconnect when conversation changes
   useEffect(() => {
-    connect();
+    if (conversationId && token) {
+      connect();
+    }
     return () => disconnect();
-  }, [connect, disconnect]);
+  }, [conversationId, token, connect, disconnect]);
 
   return {
     isConnected,
-    messages,
-    error,
     sendMessage,
+    error,
     connect,
     disconnect,
   };
