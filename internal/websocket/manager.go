@@ -34,15 +34,21 @@ type Manager struct {
 	register   chan *Client
 	unregister chan *Client
 	mutex      sync.RWMutex
+	
+	// Connection limits
+	maxConnections int
+	connectionCount int
 }
 
 // NewManager creates a new WebSocket manager
 func NewManager() *Manager {
 	return &Manager{
-		clients:    make(map[string]*Client),
-		broadcast:  make(chan *Message),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
+		clients:         make(map[string]*Client),
+		broadcast:       make(chan *Message),
+		register:        make(chan *Client),
+		unregister:      make(chan *Client),
+		maxConnections:  1000, // Max 1000 connections
+		connectionCount: 0,
 	}
 }
 
@@ -52,18 +58,29 @@ func (m *Manager) Start() {
 		select {
 		case client := <-m.register:
 			m.mutex.Lock()
+			
+			// Check connection limit
+			if m.connectionCount >= m.maxConnections {
+				log.Printf("Rejected connection: limit reached (%d)", m.maxConnections)
+				client.Conn.Close()
+				m.mutex.Unlock()
+				continue
+			}
+			
 			m.clients[client.ID] = client
+			m.connectionCount++
 			m.mutex.Unlock()
-			log.Printf("Client connected: %s (User: %s)", client.ID, client.Username)
+			log.Printf("Client connected: %s (User: %s) - Total: %d", client.ID, client.Username, m.connectionCount)
 
 		case client := <-m.unregister:
 			m.mutex.Lock()
 			if _, ok := m.clients[client.ID]; ok {
 				delete(m.clients, client.ID)
+				m.connectionCount--
 				client.Conn.Close()
 			}
 			m.mutex.Unlock()
-			log.Printf("Client disconnected: %s (User: %s)", client.ID, client.Username)
+			log.Printf("Client disconnected: %s (User: %s) - Total: %d", client.ID, client.Username, m.connectionCount)
 
 		case message := <-m.broadcast:
 			m.mutex.RLock()

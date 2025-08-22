@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	"goswift/pkg/utils"
 
@@ -25,6 +26,11 @@ func NewConnection(config *utils.Config) (*DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
+
+	// Configure connection pool for better performance
+	db.SetMaxOpenConns(25)  // Maximum number of open connections
+	db.SetMaxIdleConns(10)  // Maximum number of idle connections
+	db.SetConnMaxLifetime(300 * time.Second) // Connection max lifetime
 
 	// Test connection
 	if err := db.Ping(); err != nil {

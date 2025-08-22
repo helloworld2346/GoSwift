@@ -29,8 +29,8 @@ func SetupRouter(config *utils.Config, db *database.DB, redisClient *cache.Redis
 	// Add security headers
 	r.Use(middleware.SecurityHeaders())
 
-	// Add rate limiting
-	rateLimiter := middleware.NewRateLimiter(100, time.Minute)
+	// Add rate limiting - optimized for multiple users
+	rateLimiter := middleware.NewRateLimiter(1000, time.Minute) // 1000 requests per minute
 	r.Use(rateLimiter.RateLimitMiddleware())
 
 	// Add CORS middleware

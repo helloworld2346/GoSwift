@@ -83,7 +83,7 @@ export const useWebSocket = (conversationId?: string) => {
               setWsError("Connection lost");
             }
           }
-        }, 10000); // Send ping every 10 seconds
+        }, 30000); // Send ping every 30 seconds
       };
 
       ws.current.onmessage = (event) => {
@@ -191,7 +191,11 @@ export const useWebSocket = (conversationId?: string) => {
         // WebSocket error events can be triggered even on successful connections
         // Only treat as real error if connection fails completely
         console.warn("WebSocket error event:", error);
-        // Don't set error state immediately, let onclose handle disconnection
+
+        // Only set error if not already connected
+        if (!isConnected) {
+          setWsError("Connection failed");
+        }
       };
     } catch (err) {
       console.error("Error connecting to WebSocket:", err);
