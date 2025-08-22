@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuthStore } from "@/stores/auth";
 import { useChatStore } from "@/stores/chat";
-import type {
-  WebSocketMessage,
-  Message,
-  WebSocketMessageData,
-} from "@/types/chat";
+import type { WebSocketMessage, Message } from "@/types/chat";
 
 interface MessageData {
   id?: string;
@@ -83,7 +79,7 @@ export const useWebSocket = (conversationId?: string) => {
                     is_read: false,
                   };
 
-                  // Add message to chat store
+                  // Add message to chat store only if it belongs to the current conversation
                   addMessage(newMessage);
                 }
               }
@@ -149,7 +145,7 @@ export const useWebSocket = (conversationId?: string) => {
       console.error("Error connecting to WebSocket:", err);
       setWsError("Failed to connect to WebSocket");
     }
-  }, [token, addMessage, setError, clearError]);
+  }, [token, addMessage, setError, clearError, updateParticipantStatus, user]);
 
   const disconnect = useCallback(() => {
     if (ws.current) {

@@ -25,8 +25,13 @@ func (r *MessageRepository) CreateMessage(message *models.Message) error {
 	`
 	
 	message.ID = uuid.New()
-	message.CreatedAt = time.Now()
-	message.UpdatedAt = time.Now()
+	// Use provided timestamp or current time if not set
+	if message.CreatedAt.IsZero() {
+		message.CreatedAt = time.Now()
+	}
+	if message.UpdatedAt.IsZero() {
+		message.UpdatedAt = time.Now()
+	}
 	
 	_, err := r.db.Exec(query,
 		message.ID,

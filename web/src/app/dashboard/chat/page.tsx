@@ -31,11 +31,9 @@ export default function ChatPage() {
   } = useChatStore();
 
   // WebSocket hook for real-time messaging
-  const {
-    isConnected,
-    sendMessage,
-    error: wsError,
-  } = useWebSocket(selectedConversation?.id);
+  const { isConnected, error: wsError } = useWebSocket(
+    selectedConversation?.id
+  );
 
   // State for sidebar collapse
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);

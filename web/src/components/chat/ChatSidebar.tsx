@@ -38,17 +38,23 @@ export function ChatSidebar({
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
     if (diffInHours < 1) {
-      return date.toLocaleTimeString([], {
+      return date.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "Asia/Ho_Chi_Minh", // Use Vietnam timezone
       });
     } else if (diffInHours < 24) {
-      return date.toLocaleTimeString([], {
+      return date.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "Asia/Ho_Chi_Minh", // Use Vietnam timezone
       });
     } else {
-      return date.toLocaleDateString([], { month: "short", day: "numeric" });
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        timeZone: "Asia/Ho_Chi_Minh", // Use Vietnam timezone
+      });
     }
   };
 

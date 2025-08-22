@@ -176,10 +176,39 @@ func (h *Handler) handleChatMessage(client *Client, message *Message) {
 	log.Printf("Broadcasting message from %s: %s", client.Username, message.Content)
 }
 
-// BroadcastMessage broadcasts a saved message to all clients
+// BroadcastMessage broadcasts a saved message to clients in the same conversation
 func (h *Handler) BroadcastMessage(message *Message) {
-	h.manager.Broadcast(message)
-	log.Printf("Broadcasting saved message: %s", message.Content)
+	// Extract conversation_id from message data
+	var conversationID string
+	if data, ok := message.Data.(map[string]interface{}); ok {
+		if convID, exists := data["conversation_id"]; exists {
+			conversationID = convID.(string)
+		}
+	}
+
+	if conversationID == "" {
+		log.Printf("No conversation_id found in message, broadcasting to all clients")
+		h.manager.Broadcast(message)
+		return
+	}
+
+	// Get participants in this conversation
+	participants, err := h.chatService.GetConversationParticipants(conversationID)
+	if err != nil {
+		log.Printf("Error getting conversation participants: %v", err)
+		h.manager.Broadcast(message) // Fallback to broadcast all
+		return
+	}
+
+	// Create a set of participant user IDs
+	participantIDs := make(map[string]bool)
+	for _, participant := range participants {
+		participantIDs[participant.ID.String()] = true
+	}
+
+	// Broadcast only to clients who are participants in this conversation
+	h.manager.BroadcastToParticipants(participantIDs, message)
+	log.Printf("Broadcasting saved message to conversation %s: %s", conversationID, message.Content)
 }
 
 // handleUserStatus handles user status updates

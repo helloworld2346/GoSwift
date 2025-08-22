@@ -104,6 +104,24 @@ func (m *Manager) BroadcastToOthers(senderID string, message *Message) {
 	}
 }
 
+// BroadcastToParticipants sends a message only to clients who are participants in a conversation
+func (m *Manager) BroadcastToParticipants(participantIDs map[string]bool, message *Message) {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+
+	for _, client := range m.clients {
+		// Only send to clients who are participants in this conversation
+		if participantIDs[client.UserID] {
+			err := client.Conn.WriteJSON(message)
+			if err != nil {
+				log.Printf("Error sending message to client %s: %v", client.ID, err)
+				client.Conn.Close()
+				delete(m.clients, client.ID)
+			}
+		}
+	}
+}
+
 // SendToUser sends a message to a specific user
 func (m *Manager) SendToUser(userID string, message *Message) {
 	m.mutex.RLock()

@@ -53,6 +53,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
   addMessage: (message) => {
     const { messages, conversations, selectedConversation } = get();
 
+    // Only add message if it belongs to the currently selected conversation
+    if (
+      !selectedConversation ||
+      message.conversation_id !== selectedConversation.id
+    ) {
+      console.log(
+        "Message not for current conversation, skipping:",
+        message.conversation_id,
+        "current:",
+        selectedConversation?.id
+      );
+      return;
+    }
+
     // Check if message already exists to avoid duplicates
     const messageExists = messages.some((m) => m.id === message.id);
     if (messageExists) {
@@ -75,14 +89,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ messages: updatedMessages });
 
     // Update last message in conversations list
-    if (selectedConversation) {
-      const updatedConversations = conversations.map((conv) =>
-        conv.id === selectedConversation.id
-          ? { ...conv, last_message: message }
-          : conv
-      );
-      set({ conversations: updatedConversations });
-    }
+    const updatedConversations = conversations.map((conv) =>
+      conv.id === selectedConversation.id
+        ? { ...conv, last_message: message }
+        : conv
+    );
+    set({ conversations: updatedConversations });
   },
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),

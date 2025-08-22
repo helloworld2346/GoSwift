@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"goswift/internal/models"
 	"goswift/internal/repository"
@@ -215,13 +216,18 @@ func (s *ChatService) SendMessage(req *models.SendMessageRequest, senderID uuid.
 		return nil, errors.New("user is not a participant in this conversation")
 	}
 
-	// Create message
+	// Create message with current timestamp in Vietnam timezone
+	vietnamLoc, _ := time.LoadLocation("Asia/Ho_Chi_Minh")
+	now := time.Now().In(vietnamLoc)
+	
 	message := &models.Message{
 		ConversationID: req.ConversationID,
 		SenderID:       senderID,
 		Content:        req.Content,
 		MessageType:    req.MessageType,
 		IsRead:         false,
+		CreatedAt:      now,
+		UpdatedAt:      now,
 	}
 
 	err = s.messageRepo.CreateMessage(message)
@@ -319,4 +325,30 @@ func (s *ChatService) UpdateUserOnlineStatus(userID uuid.UUID, isOnline bool) er
 		return fmt.Errorf("failed to update user online status: %w", err)
 	}
 	return nil
+}
+
+// GetConversationParticipants gets all participants in a conversation
+func (s *ChatService) GetConversationParticipants(conversationID string) ([]models.User, error) {
+	convID, err := uuid.Parse(conversationID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid conversation ID: %w", err)
+	}
+
+	participants, err := s.participantRepo.GetParticipantsByConversationID(convID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get conversation participants: %w", err)
+	}
+
+	// Convert participant IDs to User objects
+	users := make([]models.User, 0, len(participants))
+	for _, participant := range participants {
+		user, err := s.userRepo.GetUserByID(participant.UserID)
+		if err != nil {
+			// Skip users that can't be found
+			continue
+		}
+		users = append(users, *user)
+	}
+
+	return users, nil
 }

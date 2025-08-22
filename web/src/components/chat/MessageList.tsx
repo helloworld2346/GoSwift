@@ -19,6 +19,7 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
     return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Asia/Ho_Chi_Minh", // Use Vietnam timezone
     });
   };
 
