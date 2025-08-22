@@ -10,6 +10,7 @@ import {
   ChatHeader,
   MessageList,
   MessageInput,
+  UserSearch,
 } from "@/components/chat";
 import type { Message } from "@/types/chat";
 
@@ -38,6 +39,9 @@ export default function ChatPage() {
 
   // State for sidebar collapse
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  // State for search modal
+  const [showSearch, setShowSearch] = useState(false);
 
   // Load conversations on mount
   useEffect(() => {
@@ -98,6 +102,14 @@ export default function ChatPage() {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
+  const handleStartNewChat = () => {
+    setShowSearch(true);
+  };
+
+  const handleCloseSearch = () => {
+    setShowSearch(false);
+  };
+
   return (
     <div className="min-h-screen p-6">
       <div className="h-[calc(100vh-3rem)] flex space-card rounded-3xl border border-card-border shadow-2xl backdrop-blur-xl overflow-hidden">
@@ -109,6 +121,7 @@ export default function ChatPage() {
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={toggleSidebar}
           loading={loading}
+          onStartNewChat={handleStartNewChat}
         />
 
         {/* Main Chat Area */}
@@ -153,6 +166,15 @@ export default function ChatPage() {
           )}
         </div>
       </div>
+
+      {/* User Search Modal */}
+      {showSearch && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card-bg border border-card-border rounded-2xl shadow-2xl w-full max-w-md xl:max-w-lg 2xl:max-w-xl h-[500px] xl:h-[550px] 2xl:h-[600px] overflow-hidden">
+            <UserSearch onClose={handleCloseSearch} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

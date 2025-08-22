@@ -3,6 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -15,6 +16,7 @@ interface ChatSidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   loading?: boolean;
+  onStartNewChat?: () => void;
 }
 
 export function ChatSidebar({
@@ -24,6 +26,7 @@ export function ChatSidebar({
   isCollapsed,
   onToggleCollapse,
   loading = false,
+  onStartNewChat,
 }: ChatSidebarProps) {
   const [tooltipData, setTooltipData] = useState<{
     show: boolean;
@@ -88,13 +91,15 @@ export function ChatSidebar({
               </h2>
             )}
             <div className="flex items-center space-x-1 xl:space-x-2">
-              {!isCollapsed && (
+              {!isCollapsed && onStartNewChat && (
                 <Button
                   size="sm"
                   variant="ghost"
+                  onClick={onStartNewChat}
                   className="text-text-primary hover:bg-white/10"
+                  title="Start New Chat"
                 >
-                  <MessageSquare className="w-3 h-3 xl:w-4 xl:h-4" />
+                  <Plus className="w-3 h-3 xl:w-4 xl:h-4" />
                 </Button>
               )}
               <Button
