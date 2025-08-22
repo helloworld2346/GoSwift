@@ -16,11 +16,15 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth";
 import { useToast } from "@/hooks/use-toast";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 export function Sidebar() {
   const { user, isLoading, isLoggingOut } = useAuthStore();
   const { showSuccess, showError } = useToast();
   const pathname = usePathname();
+
+  // Get WebSocket connection status (no conversation needed for connection status)
+  const { isConnected } = useWebSocket(undefined);
 
   const handleLogout = async () => {
     if (isLoggingOut) return; // Prevent multiple clicks
@@ -117,9 +121,19 @@ export function Sidebar() {
               <h3 className="text-xs xl:text-sm font-semibold text-text-primary">
                 {user?.display_name || "Commander"}
               </h3>
-              <p className="text-xs text-text-muted">Online • Active</p>
+              <p
+                className={`text-xs ${
+                  isConnected ? "text-blue-400" : "text-red-400"
+                }`}
+              >
+                {isConnected ? "Online" : "Offline"}
+              </p>
             </div>
-            <div className="w-2.5 h-2.5 xl:w-3 xl:h-3 bg-green-400 rounded-full animate-pulse shadow-lg"></div>
+            <div
+              className={`w-2.5 h-2.5 xl:w-3 xl:h-3 rounded-full shadow-lg ${
+                isConnected ? "bg-blue-400 animate-pulse" : "bg-red-400"
+              }`}
+            ></div>
           </div>
         </div>
 

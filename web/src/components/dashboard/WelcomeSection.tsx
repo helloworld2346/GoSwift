@@ -45,10 +45,6 @@ export function WelcomeSection() {
             })}
           </span>
         </div>
-        <div className="flex items-center space-x-1 xl:space-x-2">
-          <div className="w-1.5 h-1.5 xl:w-2 xl:h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span>Online</span>
-        </div>
       </div>
     </div>
   );

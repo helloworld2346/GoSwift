@@ -106,6 +106,11 @@ class ApiClient {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
 
+      // Log authentication errors but don't auto-logout
+      if (response.status === 401 || response.status === 403) {
+        console.log("Authentication error detected:", response.status);
+      }
+
       // Custom error messages for space theme
       const customMessage = this.getCustomErrorMessage(
         errorData.error || `HTTP error! status: ${response.status}`

@@ -14,6 +14,7 @@ type Client struct {
 	Username string          `json:"username"`
 	Conn     *websocket.Conn `json:"-"`
 	Manager  *Manager        `json:"-"`
+	mutex    sync.Mutex      // Protect concurrent writes to this client's connection
 }
 
 // Message represents a WebSocket message
@@ -67,12 +68,7 @@ func (m *Manager) Start() {
 		case message := <-m.broadcast:
 			m.mutex.RLock()
 			for _, client := range m.clients {
-				err := client.Conn.WriteJSON(message)
-				if err != nil {
-					log.Printf("Error sending message to client %s: %v", client.ID, err)
-					client.Conn.Close()
-					delete(m.clients, client.ID)
-				}
+				client.SendMessage(message)
 			}
 			m.mutex.RUnlock()
 		}
@@ -95,12 +91,7 @@ func (m *Manager) BroadcastToOthers(senderID string, message *Message) {
 			continue
 		}
 
-		err := client.Conn.WriteJSON(message)
-		if err != nil {
-			log.Printf("Error sending message to client %s: %v", client.ID, err)
-			client.Conn.Close()
-			delete(m.clients, client.ID)
-		}
+		client.SendMessage(message)
 	}
 }
 
@@ -112,12 +103,7 @@ func (m *Manager) BroadcastToParticipants(participantIDs map[string]bool, messag
 	for _, client := range m.clients {
 		// Only send to clients who are participants in this conversation
 		if participantIDs[client.UserID] {
-			err := client.Conn.WriteJSON(message)
-			if err != nil {
-				log.Printf("Error sending message to client %s: %v", client.ID, err)
-				client.Conn.Close()
-				delete(m.clients, client.ID)
-			}
+			client.SendMessage(message)
 		}
 	}
 }
@@ -129,11 +115,19 @@ func (m *Manager) SendToUser(userID string, message *Message) {
 
 	for _, client := range m.clients {
 		if client.UserID == userID {
-			err := client.Conn.WriteJSON(message)
-			if err != nil {
-				log.Printf("Error sending message to user %s: %v", userID, err)
-			}
+			client.SendMessage(message)
 		}
+	}
+}
+
+// SendMessage sends a message to this client (thread-safe)
+func (c *Client) SendMessage(message *Message) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	
+	err := c.Conn.WriteJSON(message)
+	if err != nil {
+		log.Printf("Error sending message to client %s: %v", c.ID, err)
 	}
 }
 

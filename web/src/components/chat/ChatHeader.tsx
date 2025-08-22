@@ -38,27 +38,24 @@ export function ChatHeader({
               <span className="text-white font-semibold">{avatarInitials}</span>
             </div>
             {otherUserOnline && (
-              <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-card-bg"></div>
+              <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-blue-400 rounded-full border-2 border-card-bg"></div>
             )}
           </div>
           <div>
             <h3 className="font-semibold text-text-primary">{otherUserName}</h3>
             <div className="flex items-center space-x-2">
-              <p className="text-sm text-text-muted">
-                {otherUserOnline ? "Online" : "Offline"}
-              </p>
               <div className="flex items-center space-x-1">
-                {isConnected ? (
-                  <Wifi className="w-3 h-3 text-green-400" />
-                ) : (
-                  <WifiOff className="w-3 h-3 text-red-400" />
-                )}
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    otherUserOnline ? "bg-blue-400" : "bg-gray-400"
+                  }`}
+                ></div>
                 <span
                   className={`text-xs ${
-                    isConnected ? "text-green-400" : "text-red-400"
+                    otherUserOnline ? "text-blue-400" : "text-text-muted"
                   }`}
                 >
-                  {isConnected ? "Connected" : "Disconnected"}
+                  {otherUserOnline ? "Online" : "Offline"}
                 </span>
               </div>
             </div>

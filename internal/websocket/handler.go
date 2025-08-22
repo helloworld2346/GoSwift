@@ -153,7 +153,7 @@ func (h *Handler) handleAuth(client *Client, message *Message) {
 		Timestamp: time.Now().Unix(),
 	}
 
-	client.Conn.WriteJSON(response)
+	client.SendMessage(response)
 	log.Printf("Client %s authenticated as user %s", client.ID, client.Username)
 }
 
@@ -228,5 +228,5 @@ func (h *Handler) handlePing(client *Client) {
 		Timestamp: time.Now().Unix(),
 	}
 
-	client.Conn.WriteJSON(response)
+	client.SendMessage(response)
 }

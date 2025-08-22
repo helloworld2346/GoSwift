@@ -155,7 +155,7 @@ export function ChatSidebar({
                             </span>
                           </div>
                           {otherUserOnline && (
-                            <div className="absolute -bottom-0.5 -right-0.5 xl:-bottom-1 xl:-right-1 2xl:-bottom-1 2xl:-right-1 w-2 h-2 xl:w-2.5 xl:h-2.5 2xl:w-3 2xl:h-3 bg-green-400 rounded-full border-2 border-card-bg"></div>
+                            <div className="absolute -bottom-0.5 -right-0.5 xl:-bottom-1 xl:-right-1 2xl:-bottom-1 2xl:-right-1 w-2 h-2 xl:w-2.5 xl:h-2.5 2xl:w-3 2xl:h-3 bg-blue-400 rounded-full border-2 border-card-bg"></div>
                           )}
                           {conversation.last_message &&
                             !conversation.last_message.is_read && (
@@ -178,7 +178,7 @@ export function ChatSidebar({
                             </span>
                           </div>
                           {otherUserOnline && (
-                            <div className="absolute -bottom-0.5 -right-0.5 xl:-bottom-1 xl:-right-1 2xl:-bottom-1 2xl:-right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 2xl:w-4 2xl:h-4 bg-green-400 rounded-full border-2 border-card-bg"></div>
+                            <div className="absolute -bottom-0.5 -right-0.5 xl:-bottom-1 xl:-right-1 2xl:-bottom-1 2xl:-right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 2xl:w-4 2xl:h-4 bg-blue-400 rounded-full border-2 border-card-bg"></div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">

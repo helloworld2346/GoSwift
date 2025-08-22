@@ -26,17 +26,37 @@ export const useWebSocket = (conversationId?: string) => {
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setWsError] = useState<string | null>(null);
+  const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
 
   const connect = useCallback(() => {
     if (!token) return;
+
+    // Check if network is offline before attempting connection
+    if (!navigator.onLine) {
+      console.log("Network is offline, not attempting WebSocket connection");
+      setIsConnected(false);
+      setWsError("Network disconnected");
+      return;
+    }
 
     try {
       // Connect to WebSocket with authentication
       const wsUrl = `ws://localhost:8080/ws?token=${token}`;
       ws.current = new WebSocket(wsUrl);
 
+      // Set connection timeout
+      const connectionTimeout = setTimeout(() => {
+        if (ws.current && ws.current.readyState === WebSocket.CONNECTING) {
+          console.error("WebSocket connection timeout");
+          setWsError("Connection timeout");
+          setIsConnected(false);
+          ws.current.close();
+        }
+      }, 10000); // 10 seconds timeout
+
       ws.current.onopen = () => {
         console.log("WebSocket connected");
+        clearTimeout(connectionTimeout); // Clear timeout on successful connection
         setIsConnected(true);
         setWsError(null);
         clearError();
@@ -51,6 +71,19 @@ export const useWebSocket = (conversationId?: string) => {
           console.log("Sending auth message:", authMessage);
           ws.current?.send(JSON.stringify(authMessage));
         }
+
+        // Start heartbeat to detect network issues
+        heartbeatRef.current = setInterval(() => {
+          if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+            try {
+              ws.current.send(JSON.stringify({ type: "ping" }));
+            } catch (error) {
+              console.log("Heartbeat failed, connection lost");
+              setIsConnected(false);
+              setWsError("Connection lost");
+            }
+          }
+        }, 10000); // Send ping every 10 seconds
       };
 
       ws.current.onmessage = (event) => {
@@ -133,13 +166,32 @@ export const useWebSocket = (conversationId?: string) => {
       ws.current.onclose = () => {
         console.log("WebSocket disconnected");
         setIsConnected(false);
-        setWsError("Connection lost");
+        setWsError("Connection lost - trying to reconnect...");
+
+        // Clear heartbeat
+        if (heartbeatRef.current) {
+          clearInterval(heartbeatRef.current);
+          heartbeatRef.current = null;
+        }
+
+        // Try to reconnect after a delay (only if network is online)
+        setTimeout(() => {
+          if (token && navigator.onLine) {
+            console.log("Attempting to reconnect...");
+            connect();
+          } else if (!navigator.onLine) {
+            console.log("Network is offline, not attempting reconnect");
+            setIsConnected(false);
+            setWsError("Network disconnected");
+          }
+        }, 3000); // Wait 3 seconds before reconnecting
       };
 
       ws.current.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        setWsError("WebSocket connection failed");
-        setIsConnected(false);
+        // WebSocket error events can be triggered even on successful connections
+        // Only treat as real error if connection fails completely
+        console.warn("WebSocket error event:", error);
+        // Don't set error state immediately, let onclose handle disconnection
       };
     } catch (err) {
       console.error("Error connecting to WebSocket:", err);
@@ -151,6 +203,10 @@ export const useWebSocket = (conversationId?: string) => {
     if (ws.current) {
       ws.current.close();
       ws.current = null;
+    }
+    if (heartbeatRef.current) {
+      clearInterval(heartbeatRef.current);
+      heartbeatRef.current = null;
     }
     setIsConnected(false);
   }, []);
@@ -175,13 +231,47 @@ export const useWebSocket = (conversationId?: string) => {
     [isConnected, conversationId]
   );
 
-  // Auto-reconnect when conversation changes
+  // Auto-reconnect when conversation changes or when token is available
   useEffect(() => {
-    if (conversationId && token) {
+    if (token) {
       connect();
     }
     return () => disconnect();
-  }, [conversationId, token, connect, disconnect]);
+  }, [token, connect, disconnect]);
+
+  // Listen for network status changes
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log("Network is online");
+      if (token && !isConnected) {
+        connect();
+      }
+    };
+
+    const handleOffline = () => {
+      console.log("Network is offline");
+      setIsConnected(false);
+      setWsError("Network disconnected");
+
+      // Clear any existing connection
+      if (ws.current) {
+        ws.current.close();
+        ws.current = null;
+      }
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+        heartbeatRef.current = null;
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [token, isConnected, connect]);
 
   return {
     isConnected,
