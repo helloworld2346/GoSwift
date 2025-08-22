@@ -10,6 +10,8 @@ help:
 	@echo "  make up       - Start Docker (PostgreSQL, Redis)"
 	@echo "  make down     - Stop Docker"
 	@echo "  make migrate  - Run database migrations"
+	@echo "  make swagger  - Generate Swagger documentation"
+	@echo "  make build-swagger - Build with Swagger"
 
 # Dependencies
 deps:

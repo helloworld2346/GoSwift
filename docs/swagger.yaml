@@ -591,6 +591,8 @@ paths:
       summary: Health check
       tags:
       - health
+security:
+- BearerAuth: []
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.
