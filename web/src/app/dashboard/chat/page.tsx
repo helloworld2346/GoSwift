@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/stores/auth";
 import { useChatStore } from "@/stores/chat";
 import { MessageSquare } from "lucide-react";
@@ -23,6 +23,9 @@ export default function ChatPage() {
     setMessages,
     addMessage,
   } = useChatStore();
+
+  // State for sidebar collapse
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Mock data for development
   useEffect(() => {
@@ -131,37 +134,45 @@ export default function ChatPage() {
     console.log("Sending message:", message);
   };
 
-  return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Sidebar */}
-      <ChatSidebar
-        conversations={conversations}
-        selectedConversation={selectedConversation}
-        onSelectConversation={setSelectedConversation}
-      />
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {selectedConversation ? (
-          <>
-            <ChatHeader conversation={selectedConversation} />
-            <MessageList messages={messages} currentUserId={user?.id || ""} />
-            <MessageInput onSendMessage={handleSendMessage} />
-          </>
-        ) : (
-          /* Empty State */
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <MessageSquare className="w-16 h-16 text-white/40 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Select a conversation
-              </h3>
-              <p className="text-white/60">
-                Choose a conversation from the sidebar to start chatting
-              </p>
+  return (
+    <div className="min-h-screen p-6">
+      <div className="h-[calc(100vh-3rem)] flex space-card rounded-3xl border border-card-border shadow-2xl backdrop-blur-xl overflow-hidden">
+        {/* Sidebar */}
+        <ChatSidebar
+          conversations={conversations}
+          selectedConversation={selectedConversation}
+          onSelectConversation={setSelectedConversation}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={toggleSidebar}
+        />
+
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col bg-white/5">
+          {selectedConversation ? (
+            <>
+              <ChatHeader conversation={selectedConversation} />
+              <MessageList messages={messages} currentUserId={user?.id || ""} />
+              <MessageInput onSendMessage={handleSendMessage} />
+            </>
+          ) : (
+            /* Empty State */
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <MessageSquare className="w-16 h-16 text-white/40 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Select a conversation
+                </h3>
+                <p className="text-white/60">
+                  Choose a conversation from the sidebar to start chatting
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

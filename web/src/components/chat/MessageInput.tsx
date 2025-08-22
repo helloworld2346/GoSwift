@@ -28,7 +28,7 @@ export function MessageInput({
   };
 
   return (
-    <div className="p-4 border-t border-white/20">
+    <div className="p-4 border-t border-card-border">
       <div className="flex space-x-2">
         <Input
           value={message}
@@ -36,7 +36,7 @@ export function MessageInput({
           onKeyPress={handleKeyPress}
           placeholder="Type a message..."
           disabled={disabled}
-          className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-cyan-400"
+          className="flex-1 bg-white/10 border-card-border text-text-primary placeholder:text-text-muted focus:border-nebula-purple"
         />
         <Button
           onClick={handleSend}

@@ -37,7 +37,7 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
             className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
               message.sender_id === currentUserId
                 ? "bg-gradient-to-r from-cyan-400 to-blue-500 text-white"
-                : "bg-white/10 text-white"
+                : "bg-white/10 text-text-primary"
             }`}
           >
             <p className="text-sm">{message.content}</p>
@@ -45,7 +45,7 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
               className={`text-xs mt-1 ${
                 message.sender_id === currentUserId
                   ? "text-white/70"
-                  : "text-white/50"
+                  : "text-text-muted"
               }`}
             >
               {formatTime(message.created_at)}

@@ -8,7 +8,7 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ conversation }: ChatHeaderProps) {
   return (
-    <div className="p-4 border-b border-white/20 bg-white/5">
+    <div className="p-4 border-b border-card-border bg-white/5">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="relative">
@@ -21,12 +21,14 @@ export function ChatHeader({ conversation }: ChatHeaderProps) {
               </span>
             </div>
             {conversation.participants[0]?.is_online && (
-              <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-slate-900"></div>
+              <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-card-bg"></div>
             )}
           </div>
           <div>
-            <h3 className="font-semibold text-white">{conversation.name}</h3>
-            <p className="text-sm text-white/60">
+            <h3 className="font-semibold text-text-primary">
+              {conversation.name}
+            </h3>
+            <p className="text-sm text-text-muted">
               {conversation.participants[0]?.is_online ? "Online" : "Offline"}
             </p>
           </div>
@@ -34,7 +36,7 @@ export function ChatHeader({ conversation }: ChatHeaderProps) {
         <Button
           size="sm"
           variant="ghost"
-          className="text-white hover:bg-white/20"
+          className="text-text-primary hover:bg-white/10"
         >
           <MoreVertical className="w-4 h-4" />
         </Button>
