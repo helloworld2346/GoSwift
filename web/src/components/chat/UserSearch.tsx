@@ -104,7 +104,7 @@ export function UserSearch({ onClose }: UserSearchProps) {
       {/* Search Results */}
       <div className="flex-1 overflow-y-auto p-3 xl:p-4">
         <div className="space-y-2">
-          {query.trim() && !searching && users.length === 0 && (
+          {query.trim() && !searching && (!users || users.length === 0) && (
             <div className="text-center py-6 xl:py-8 text-text-muted">
               <User className="w-6 h-6 xl:w-8 xl:h-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No users found</p>
@@ -114,7 +114,7 @@ export function UserSearch({ onClose }: UserSearchProps) {
             </div>
           )}
 
-          {users.map((user) => (
+          {users?.map((user) => (
             <div
               key={user.id}
               className="flex items-center justify-between p-2 xl:p-3 rounded-lg bg-white/5 border border-card-border hover:bg-white/10 transition-colors"
