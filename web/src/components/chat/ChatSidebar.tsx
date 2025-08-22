@@ -6,7 +6,8 @@ import {
   Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { Tooltip } from "@/components/ui/tooltip";
+
 import type { Conversation } from "@/types/chat";
 
 interface ChatSidebarProps {
@@ -28,13 +29,6 @@ export function ChatSidebar({
   loading = false,
   onStartNewChat,
 }: ChatSidebarProps) {
-  const [tooltipData, setTooltipData] = useState<{
-    show: boolean;
-    text: string;
-    x: number;
-    y: number;
-  }>({ show: false, text: "", x: 0, y: 0 });
-
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -53,26 +47,6 @@ export function ChatSidebar({
     } else {
       return date.toLocaleDateString([], { month: "short", day: "numeric" });
     }
-  };
-
-  const handleMouseEnter = (
-    e: React.MouseEvent,
-    conversation: Conversation
-  ) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const tooltipText = `${conversation.name}${
-      conversation.last_message ? ` - ${conversation.last_message.content}` : ""
-    }`;
-    setTooltipData({
-      show: true,
-      text: tooltipText,
-      x: rect.right + 10,
-      y: rect.top + rect.height / 2,
-    });
-  };
-
-  const handleMouseLeave = () => {
-    setTooltipData((prev) => ({ ...prev, show: false }));
   };
 
   return (
@@ -147,31 +121,29 @@ export function ChatSidebar({
               >
                 {isCollapsed ? (
                   <div className="p-2 xl:p-3 flex justify-center">
-                    <div
-                      className="relative"
-                      onMouseEnter={(e) => handleMouseEnter(e, conversation)}
-                      onMouseLeave={handleMouseLeave}
-                    >
-                      <div className="w-8 h-8 xl:w-10 xl:h-10 2xl:w-12 2xl:h-12 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-xs xl:text-sm 2xl:text-base">
-                          {conversation.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </span>
-                      </div>
-                      {conversation.participants[0]?.is_online && (
-                        <div className="absolute -bottom-0.5 -right-0.5 xl:-bottom-1 xl:-right-1 2xl:-bottom-1 2xl:-right-1 w-2 h-2 xl:w-2.5 xl:h-2.5 2xl:w-3 2xl:h-3 bg-green-400 rounded-full border-2 border-card-bg"></div>
-                      )}
-                      {conversation.last_message &&
-                        !conversation.last_message.is_read && (
-                          <div className="absolute -top-0.5 -right-0.5 xl:-top-1 xl:-right-1 2xl:-top-1 2xl:-right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 2xl:w-4 2xl:h-4 bg-nebula-purple rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs font-medium">
-                              !
-                            </span>
-                          </div>
+                    <Tooltip content={conversation.name} position="right">
+                      <div className="relative">
+                        <div className="w-8 h-8 xl:w-10 xl:h-10 2xl:w-12 2xl:h-12 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-semibold text-xs xl:text-sm 2xl:text-base">
+                            {conversation.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </span>
+                        </div>
+                        {conversation.participants[0]?.is_online && (
+                          <div className="absolute -bottom-0.5 -right-0.5 xl:-bottom-1 xl:-right-1 2xl:-bottom-1 2xl:-right-1 w-2 h-2 xl:w-2.5 xl:h-2.5 2xl:w-3 2xl:h-3 bg-green-400 rounded-full border-2 border-card-bg"></div>
                         )}
-                    </div>
+                        {conversation.last_message &&
+                          !conversation.last_message.is_read && (
+                            <div className="absolute -top-0.5 -right-0.5 xl:-top-1 xl:-right-1 2xl:-top-1 2xl:-right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 2xl:w-4 2xl:h-4 bg-nebula-purple rounded-full flex items-center justify-center">
+                              <span className="text-white text-xs font-medium">
+                                !
+                              </span>
+                            </div>
+                          )}
+                      </div>
+                    </Tooltip>
                   </div>
                 ) : (
                   <div className="p-3 xl:p-4">
@@ -214,28 +186,6 @@ export function ChatSidebar({
           )}
         </div>
       </div>
-
-      {/* Global Tooltip */}
-      {tooltipData.show && (
-        <div
-          className="fixed bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap z-[999999] shadow-xl border border-gray-700 pointer-events-none"
-          style={{
-            left: tooltipData.x,
-            top: tooltipData.y,
-            transform: "translateY(-50%)",
-          }}
-        >
-          <div className="font-medium mb-1">
-            {tooltipData.text.split(" - ")[0]}
-          </div>
-          {tooltipData.text.includes(" - ") && (
-            <div className="text-gray-300 text-xs max-w-48 truncate">
-              {tooltipData.text.split(" - ")[1]}
-            </div>
-          )}
-          <div className="absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-0 border-r-4 border-t-4 border-b-4 border-transparent border-l-gray-900"></div>
-        </div>
-      )}
     </>
   );
 }

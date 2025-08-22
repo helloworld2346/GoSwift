@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, User, Loader2, MessageSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,28 +35,28 @@ export function UserSearch({ onClose }: UserSearchProps) {
     return () => clearTimeout(timeoutId);
   }, [query]);
 
-  const performSearch = async (searchQuery: string) => {
-    if (searchQuery.length < 2) return;
+  const performSearch = useCallback(
+    async (searchQuery: string) => {
+      if (searchQuery.length < 2) return;
 
-    setSearching(true);
-    try {
-      const results = await chatAPI.searchUsers(searchQuery);
-      setUsers(results);
-    } catch (error) {
-      console.error("Search failed:", error);
-      showError("Failed to search users");
-    } finally {
-      setSearching(false);
-    }
-  };
+      setSearching(true);
+      try {
+        const results = await chatAPI.searchUsers(searchQuery);
+        setUsers(results);
+      } catch (error) {
+        console.error("Search failed:", error);
+        showError("Failed to search users");
+      } finally {
+        setSearching(false);
+      }
+    },
+    [showError]
+  );
 
   const handleStartChat = async (user: SearchUserResponse) => {
     setLoading(true);
     try {
-      const conversation = await createConversation(
-        [user.id],
-        `Chat with ${user.display_name}`
-      );
+      await createConversation([user.id], `Chat with ${user.display_name}`);
       showSuccess(`Started chat with ${user.display_name}`);
       onClose(); // Close search modal
     } catch (error) {
