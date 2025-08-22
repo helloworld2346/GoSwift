@@ -32,7 +32,7 @@ func NewChatHandler(chatService *service.ChatService) *ChatHandler {
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
-// @Router /api/v1/conversations [post]
+// @Router /conversations [post]
 // @Security BearerAuth
 func (h *ChatHandler) CreateConversation(c *gin.Context) {
 	var req models.CreateConversationRequest
@@ -73,7 +73,7 @@ func (h *ChatHandler) CreateConversation(c *gin.Context) {
 // @Success 200 {array} models.ConversationResponse
 // @Failure 401 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
-// @Router /api/v1/conversations [get]
+// @Router /conversations [get]
 // @Security BearerAuth
 func (h *ChatHandler) GetConversations(c *gin.Context) {
 	// Get user ID from context
@@ -109,7 +109,7 @@ func (h *ChatHandler) GetConversations(c *gin.Context) {
 // @Failure 401 {object} map[string]interface{}
 // @Failure 403 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
-// @Router /api/v1/conversations/{id} [get]
+// @Router /conversations/{id} [get]
 // @Security BearerAuth
 func (h *ChatHandler) GetConversation(c *gin.Context) {
 	conversationIDStr := c.Param("id")
@@ -157,7 +157,7 @@ func (h *ChatHandler) GetConversation(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Failure 403 {object} map[string]interface{}
-// @Router /api/v1/conversations/{id}/messages [post]
+// @Router /conversations/{id}/messages [post]
 // @Security BearerAuth
 func (h *ChatHandler) SendMessage(c *gin.Context) {
 	conversationIDStr := c.Param("id")
@@ -213,7 +213,7 @@ func (h *ChatHandler) SendMessage(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Failure 403 {object} map[string]interface{}
-// @Router /api/v1/conversations/{id}/messages [get]
+// @Router /conversations/{id}/messages [get]
 // @Security BearerAuth
 func (h *ChatHandler) GetMessages(c *gin.Context) {
 	conversationIDStr := c.Param("id")
@@ -276,7 +276,7 @@ func (h *ChatHandler) GetMessages(c *gin.Context) {
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Failure 403 {object} map[string]interface{}
-// @Router /api/v1/conversations/{id}/messages/{message_id}/read [post]
+// @Router /conversations/{id}/messages/{message_id}/read [post]
 // @Security BearerAuth
 func (h *ChatHandler) MarkMessageAsRead(c *gin.Context) {
 	messageIDStr := c.Param("message_id")

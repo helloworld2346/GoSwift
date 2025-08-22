@@ -279,11 +279,11 @@ GoSwift/
 - [x] Conversation participants table
 - [x] Basic relationships và indexes
 
-#### 3.3 Chat Logic
-- [ ] Send/receive messages
-- [ ] Conversation creation (1-1 và group)
-- [ ] Message persistence
-- [ ] Message broadcasting
+#### 3.3 Chat Logic ✅ **COMPLETED**
+- [x] Send/receive messages
+- [x] Conversation creation (1-1 và group)
+- [x] Message persistence
+- [x] Message broadcasting
 
 #### 3.4 Simple Chat UI
 - [ ] Basic chat interface
@@ -484,6 +484,14 @@ npm run dev
 
 ### Swagger Documentation
 - `GET /swagger/*` - API documentation
+
+### Chat
+- `POST /api/v1/conversations` - Tạo cuộc trò chuyện
+- `GET /api/v1/conversations` - Lấy danh sách cuộc trò chuyện
+- `GET /api/v1/conversations/:id` - Lấy chi tiết cuộc trò chuyện
+- `POST /api/v1/conversations/:id/messages` - Gửi tin nhắn
+- `GET /api/v1/conversations/:id/messages` - Lấy tin nhắn
+- `POST /api/v1/conversations/:id/messages/:message_id/read` - Đánh dấu đã đọc
 
 ## 🛠 Development Commands
 

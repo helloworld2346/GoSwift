@@ -41,6 +41,12 @@ func (s *ChatService) CreateConversation(req *models.CreateConversationRequest) 
 		}
 	}
 
+	// Validate that creator exists
+	_, err := s.userRepo.GetUserByID(req.CreatedBy)
+	if err != nil {
+		return nil, fmt.Errorf("creator %s not found", req.CreatedBy)
+	}
+
 	// Create conversation
 	conversation := &models.Conversation{
 		Name:      req.Name,
@@ -48,17 +54,34 @@ func (s *ChatService) CreateConversation(req *models.CreateConversationRequest) 
 		CreatedBy: req.CreatedBy,
 	}
 
-	err := s.conversationRepo.CreateConversation(conversation)
+	err = s.conversationRepo.CreateConversation(conversation)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create conversation: %w", err)
 	}
 
-	// Add participants
+	// Add creator as participant first
+	creatorParticipant := &models.ConversationParticipant{
+		ConversationID: conversation.ID,
+		UserID:         req.CreatedBy,
+		IsAdmin:        true, // Creator is admin
+	}
+
+	err = s.participantRepo.AddParticipant(creatorParticipant)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add creator as participant: %w", err)
+	}
+
+	// Add other participants
 	for _, userID := range req.UserIDs {
+		// Skip if user is already added (creator)
+		if userID == req.CreatedBy {
+			continue
+		}
+
 		participant := &models.ConversationParticipant{
 			ConversationID: conversation.ID,
 			UserID:         userID,
-			IsAdmin:        userID == req.CreatedBy, // Creator is admin
+			IsAdmin:        false, // Other users are not admin
 		}
 
 		err := s.participantRepo.AddParticipant(participant)
